@@ -1,6 +1,6 @@
 # Petergate
 
-TODO: Write a gem description
+Simple User Authorizations.
 
 ## Installation
 
@@ -17,6 +17,10 @@ And then execute:
 Or install it yourself as:
 
     $ gem install petergate
+Make sure you already have a User model setup. Works great with [devise](https://github.com/plataformatec/devise).
+
+Run generator to install it.
+    $ rails g petergate:install
 
 ## Usage
 
