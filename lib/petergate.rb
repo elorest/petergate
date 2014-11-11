@@ -52,26 +52,4 @@ module Petergate
     # End Permissions
     ################################################################################
   end
-
-  module User
-    serialize :roles
-
-    Roles = [:company, :service, :admin, :weak_admin]
-
-    after_initialize do
-      self[:roles] = []
-    end
-
-    def roles=(v)
-      self[:roles] = v.map(&:to_sym).to_a.select{|r| r.size > 0 && Roles.include?(r)}
-    end
-
-    def roles
-      self[:roles] + [:user]
-    end
-
-    def role
-      roles.first
-    end
-  end
 end
