@@ -5,36 +5,13 @@ module Petergate
     class InstallGenerator < Rails::Generators::Base
       include Rails::Generators::Migration
       source_root File.expand_path("../templates", __FILE__)
-
-      desc "Copies migrations"
       class_option :orm
 
-      # def copy_initializer
-      #   @underscored_user_name = "user".underscore
-      #   template '../templates/active_admin.rb.erb',
-      #     'config/initializers/active_admin.rb'
-      # end
-
-      # def install_assets
-      #   require 'rails'
-      #   require 'active_admin'
-
-      #   template '../templates/active_admin.js',
-      #     'app/assets/javascripts/active_admin.js'
-      #   template '../templates/active_admin.css.scss',
-      #     'app/assets/stylesheets/active_admin.css.scss'
-      # end
-
-      # def setup_routes
-      #   route "mount Goldencobra::Engine => '/'"
-      #   route "devise_for :users, ActiveAdmin::Devise.config"
-      #   route "ActiveAdmin.routes(self)"
-      # end
-
-      # def self.source_root
-      #   File.expand_path("../templates", __FILE__)
-      # end
-      #
+      desc "Sets up rails project for Petergate Authorizations"
+      def self.next_migration_number(path)
+        sleep 1
+        Time.now.utc.strftime("%Y%m%d%H%M%S")
+      end
 
       def insert_into_user_model
         inject_into_file "app/models/user.rb", after: /^\s{2,}devise[^\n]+\n[^\n]+\n/ do
@@ -67,11 +44,6 @@ module Petergate
 
           RUBY
         end
-      end
-
-      def self.next_migration_number(path)
-        sleep 1
-        Time.now.utc.strftime("%Y%m%d%H%M%S")
       end
 
       def create_migrations
