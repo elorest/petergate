@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["isaac@isaacsloan.com"]
   spec.summary       = %q{Authorization system allowing verbose easy read controller syntax.}
   spec.description   = %q{Authorization system.}
-  spec.homepage      = ""
+  spec.homepage      = "http://RingSeven.com"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files -z`.split("\x0")
