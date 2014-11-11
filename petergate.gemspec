@@ -8,8 +8,8 @@ Gem::Specification.new do |spec|
   spec.version       = Petergate::VERSION
   spec.authors       = ["Isaac Sloan"]
   spec.email         = ["isaac@isaacsloan.com"]
-  spec.summary       = %q{TODO: Write a short summary. Required.}
-  spec.description   = %q{TODO: Write a longer description. Optional.}
+  spec.summary       = %q{Authorization system allowing verbose easy read controller syntax.}
+  spec.description   = %q{Authorization system.}
   spec.homepage      = ""
   spec.license       = "MIT"
 

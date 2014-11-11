@@ -37,8 +37,6 @@ module Petergate
         user_signed_in?
       when *(rules[(user_signed_in? ? current_user.role.to_sym : :all)]) # checks if action can be seen by the  current_users role. If the user isn't logged in check if it can be seen by :all
         true
-        # when *((Array[rules[:company]] + Array[rules[:group]]).compact) #fakes rules for admins impersonating organizations.
-        #   current_organization.present? && logged_in?(:admin)
       else
         false
       end
@@ -58,7 +56,7 @@ module Petergate
   module User
     serialize :roles
 
-    Roles = [:customer, :weak_customer, :service, :wiring, :admin, :weak_admin, :weak_admin_plus]
+    Roles = [:company, :service, :admin, :weak_admin]
 
     after_initialize do
       self[:roles] = []
