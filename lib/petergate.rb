@@ -1,12 +1,14 @@
 require "petergate/version"
-require 'petergate/railtie' if defined?(Rails)
+# require 'petergate/railtie' if defined?(Rails)
 
 module PeterGate
   module ControllerMethods
     module ClassMethods
       def access(rules = {}, &block)
-        b_rules = block.call
-        rules = rules.merge(b_rules) if b_rules.is_a?(Hash)
+        if block
+          b_rules = block.call
+          rules = rules.merge(b_rules) if b_rules.is_a?(Hash)
+        end
         def check_access
           perms(rules)
         end
@@ -15,13 +17,8 @@ module PeterGate
 
     AllRest = [:show, :index, :new, :edit, :update, :create, :destroy]
 
-    ################################################################################
-    # Start Permissions
-    ################################################################################
     def self.included(base)
-      raise
       base.extend(ClassMethods)
-      puts "this whole thing sucks"
       base.before_filter do 
         unless logged_in?(:admin)
           message= check_access
@@ -60,10 +57,6 @@ module PeterGate
     def logged_in?(*roles)
       current_user && (roles & current_user.roles).any?
     end
-
-    ################################################################################
-    # End Permissions
-    ################################################################################
   end
 end
 
