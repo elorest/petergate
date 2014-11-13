@@ -1,5 +1,4 @@
 require "petergate/version"
-# require 'petergate/railtie' if defined?(Rails)
 
 module PeterGate
   module ControllerMethods
@@ -58,8 +57,66 @@ module PeterGate
       current_user && (roles & current_user.roles).any?
     end
   end
+
+  module UserMethods
+    def self.included(base)
+      base.extend(ClassMethods)
+    end
+
+    module ClassMethods
+      def petergate(options = {roles: [:admin]})
+        serialize :roles
+        after_initialize do
+          self[:roles] ||= []
+        end
+
+        instance_eval do
+          @available_roles = options[:roles]
+
+          def available_roles
+            @available_roles
+          end
+        end
+
+
+        class_eval do
+          # TODO: Find a better way of making this available as both class and instance method.
+          def available_roles
+            self.class.available_roles
+          end
+
+          def roles=(v)
+            self[:roles] = v.map(&:to_sym).to_a.select{|r| r.size > 0 && available_roles.include?(r)}
+          end
+
+          def roles
+            self[:roles] + [:user]
+          end
+
+          def role
+            roles.first
+          end
+        end
+      end
+    end
+  end
 end
 
 class ActionController::Base
   include PeterGate::ControllerMethods
 end
+
+class ActiveRecord::Base
+  include PeterGate::UserMethods
+end
+
+# class User < ActiveRecord::Base
+#   ################################################################################ 
+#   ## PeterGate Roles
+#   ################################################################################
+# 
+# 
+#   ################################################################################ 
+#   ## End PeterGate Roles
+#   ################################################################################
+# end
