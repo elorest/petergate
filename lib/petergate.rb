@@ -8,8 +8,19 @@ module PeterGate
           b_rules = block.call
           rules = rules.merge(b_rules) if b_rules.is_a?(Hash)
         end
-        def check_access
-          perms(rules)
+
+        instance_eval do
+          @_controller_rules = rules
+
+          def controller_rules
+            @_controller_rules
+          end
+        end
+
+        class_eval do
+          def check_access
+            perms(self.class.controller_rules)
+          end
         end
       end
     end
