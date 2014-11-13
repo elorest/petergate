@@ -39,7 +39,7 @@ access all: [:show, :index], user: AllRest
 Inside your views you can use logged_in?(:admin, :customer) to show or hide content.
 
 ```erb
-<%= link_to "destroy", destroy_listing_path(listing) if logged_in?(:admin) %>
+<%= link_to "destroy", destroy_listing_path(listing) if logged_in?(:admin, :customer) %>
 ```
 
 ## Contributing
