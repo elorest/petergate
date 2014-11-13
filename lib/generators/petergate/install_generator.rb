@@ -20,7 +20,7 @@ module Petergate
   ################################################################################ 
   ## PeterGate Roles
   ## The :user role is added by default and shouldn't be included in this list.
-  petergate(roles: [admin, company_admin])
+  petergate(roles: [:admin, :company_admin])
   ################################################################################
  
           RUBY
