@@ -14,7 +14,7 @@ module Petergate
       end
 
       def insert_into_user_model
-        inject_into_file "app/models/user.rb", after: /^\s{2,}devise[^\n]+\n[^\n]+\n/ do
+        inject_into_file "app/models/user.rb", after: /^class\sUser < ActiveRecord::Base/ do
           <<-'RUBY'
 
   ################################################################################ 
