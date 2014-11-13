@@ -19,33 +19,10 @@ module Petergate
 
   ################################################################################ 
   ## PeterGate Roles
+  ## The :user role is added by default and shouldn't be included in this list.
+  petergate(roles: [admin, company_admin])
   ################################################################################
-
-  serialize :roles
-
-  # The :user role is added by default and shouldn't be included in this list.
-  Roles = [:admin] 
-
-  after_initialize do
-    self[:roles] = []
-  end
-
-  def roles=(v)
-    self[:roles] = v.map(&:to_sym).to_a.select{|r| r.size > 0 && Roles.include?(r)}
-  end
-
-  def roles
-    self[:roles] + [:user]
-  end
-
-  def role
-    roles.first
-  end
-
-  ################################################################################ 
-  ## End PeterGate Roles
-  ################################################################################
-
+ 
           RUBY
         end
       end
