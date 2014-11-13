@@ -29,6 +29,7 @@ module PeterGate
 
     def self.included(base)
       base.extend(ClassMethods)
+      base.helper_method :logged_in?
       base.before_filter do 
         unless logged_in?(:admin)
           message= check_access
@@ -67,6 +68,7 @@ module PeterGate
     def logged_in?(*roles)
       current_user && (roles & current_user.roles).any?
     end
+
   end
 
   module UserMethods
