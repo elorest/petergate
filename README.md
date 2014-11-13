@@ -6,21 +6,21 @@ Simple User Authorizations.
 
 Add this line to your application's Gemfile:
 
-    $ gem 'petergate'
+    gem 'petergate'
 
 And then execute:
 
-    $ bundle
+    bundle
 
 Or install it yourself as:
 
-    $ gem install petergate
+    gem install petergate
 Make sure you already have a User model setup. Works great with [devise](https://github.com/plataformatec/devise).
 
 Run generator to install it.
 
-    $ rails g petergate:install
-    $ rake db:migrate
+    rails g petergate:install
+    rake db:migrate
 
 This will add: 
 ```ruby
