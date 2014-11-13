@@ -44,7 +44,7 @@ Inside your views you can use logged_in?(:admin, :customer) to show or hide cont
 
 ## Contributing
 
-1. Fork it ( https://github.com/[my-github-username]/petergate/fork )
+1. Fork it ( https://github.com/isaacsloan/petergate/fork )
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
