@@ -80,7 +80,6 @@ module PeterGate
 
 
         class_eval do
-          # TODO: Find a better way of making this available as both class and instance method.
           def available_roles
             self.class.available_roles
           end
