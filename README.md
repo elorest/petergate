@@ -6,9 +6,7 @@ Simple User Authorizations.
 
 Add this line to your application's Gemfile:
 
-```ruby
-gem 'petergate'
-```
+    $ gem 'petergate'
 
 And then execute:
 
@@ -22,10 +20,27 @@ Make sure you already have a User model setup. Works great with [devise](https:/
 Run generator to install it.
 
     $ rails g petergate:install
+    $ rake db:migrate
+
+This will add: 
+```ruby
+petergate(roles: [:admin])
+```
+to your gem file. 
 
 ## Usage
 
-TODO: Write usage instructions here
+Setup permissions in your controllers the same as you would for a before filter like so:
+
+```ruby
+access all: [:show, :index], user: AllRest
+```
+
+Inside your views you can use logged?(:admin, :customer) to show or hide content.
+
+```erb
+<%= link_to "destroy", destroy_listing_path(listing) if logged_in?(:admin) %>
+```
 
 ## Contributing
 
