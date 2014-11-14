@@ -1,8 +1,9 @@
 # Petergate
 
-Simple User Authorizations.
+Easy to use and read action and content based authorizations.
 
-## Installation
+Installation
+------
 
 Add this line to your application's Gemfile:
 
@@ -28,7 +29,8 @@ petergate(roles: [:admin])
 ```
 to your User model. 
 
-## Usage
+Usage
+------
 
 Setup permissions in your controllers the same as you would for a before filter like so:
 
@@ -41,6 +43,17 @@ Inside your views you can use logged_in?(:admin, :customer, :etc) to show or hid
 ```erb
 <%= link_to "destroy", destroy_listing_path(listing) if logged_in?(:admin, :customer, :etc) %>
 ```
+
+Credits
+-------
+
+PeterGate is written and maintaned by Isaac Sloan and friends.
+
+![RingSeven](https://avatars1.githubusercontent.com/u/8309133?v=3&s=200)
+
+PeterGate is maintained and funded by [RingSeven](http://ringseven.com)
+
+Written By Isaac Sloan
 
 ## Contributing
 
