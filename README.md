@@ -36,10 +36,10 @@ Setup permissions in your controllers the same as you would for a before filter 
 access all: [:show, :index], user: AllRest
 ```
 
-Inside your views you can use logged_in?(:admin, :customer) to show or hide content.
+Inside your views you can use logged_in?(:admin, :customer, :etc) to show or hide content.
 
 ```erb
-<%= link_to "destroy", destroy_listing_path(listing) if logged_in?(:admin, :customer) %>
+<%= link_to "destroy", destroy_listing_path(listing) if logged_in?(:admin, :customer, :etc) %>
 ```
 
 ## Contributing
