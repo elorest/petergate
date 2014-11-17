@@ -24,4 +24,9 @@ class ActionController::TestCase
     u = User.create(email: email, password: password, password_confirmation: password)
     sign_in(u) 
   end
+
+  def create_admin_and_login(email: "user@example.com", password: "youllneverguess")
+    u = User.create(email: email, password: password, password_confirmation: password, roles: [:admin])
+    sign_in(u) 
+  end
 end
