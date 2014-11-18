@@ -6,7 +6,8 @@
 /doc/
 /pkg/
 /spec/reports/
-/tmp/
+dummy/tmp/*
+*.sqlite3
 *.bundle
 *.so
 *.o
