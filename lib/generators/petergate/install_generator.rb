@@ -27,6 +27,16 @@ module Petergate
         end
       end
 
+  #     def insert_into_application_controller
+  #       inject_into_file "app/controllers/application_controller.rb", after: /^class\sApplicationController\s<\sActionController::Base/ do
+  #         <<-'RUBY'
+
+  # access(all: [:index, :show])
+ 
+  #         RUBY
+  #       end
+  #     end
+
       def create_migrations
         Dir["#{self.class.source_root}/migrations/*.rb"].sort.each do |filepath|
           name = File.basename(filepath)

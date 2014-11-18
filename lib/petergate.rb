@@ -44,10 +44,6 @@ module PeterGate
       end
     end
 
-    def check_access
-      permissions
-    end
-
     def permissions(rules = {all: [:index, :show], customer: [], wiring: []})
       # Allows Array's of keys for he same hash.
       rules = rules.inject({}){|h, (k, v)| k.class == Array ? h.merge(Hash[k.map{|kk| [kk, v]}]) : h.merge(k => v) }
@@ -121,14 +117,3 @@ end
 class ActiveRecord::Base
   include PeterGate::UserMethods
 end
-
-# class User < ActiveRecord::Base
-#   ################################################################################ 
-#   ## PeterGate Roles
-#   ################################################################################
-# 
-# 
-#   ################################################################################ 
-#   ## End PeterGate Roles
-#   ################################################################################
-# end
