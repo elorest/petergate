@@ -32,7 +32,7 @@ module PeterGate
       base.helper_method :logged_in?
       base.before_filter do 
         unless logged_in?(:admin)
-          message= check_access
+          message= defined?(check_access) ? check_access : true
           if message.is_a?(String) || message == false
             if user_signed_in?
               redirect_to (request.referrer || after_sign_in_path_for(current_user)), :notice => message || "Permission Denied"
