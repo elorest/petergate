@@ -48,8 +48,13 @@ If you need to access available roles within your project you can by calling:
 
 ```ruby
 User::ROLES
-# or
-User.available_roles
+# or from an instance
+User.first.available_roles
+# ROLES is a CONSTANT and will still work from within the User model instance methods like in this default setter:
+
+def roles=(v)
+  self[:roles] = v.map(&:to_sym).to_a.select{|r| r.size > 0 && ROLES.include?(r)}
+end
 ```
 
 
