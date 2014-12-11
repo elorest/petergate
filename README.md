@@ -44,6 +44,15 @@ Inside your views you can use logged_in?(:admin, :customer, :etc) to show or hid
 <%= link_to "destroy", destroy_listing_path(listing) if logged_in?(:admin, :customer, :etc) %>
 ```
 
+If you need to access available roles within your project you can by calling:
+
+```ruby
+User::ROLES
+# or
+User.available_roles
+```
+
+
 Credits
 -------
 
