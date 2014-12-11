@@ -19,7 +19,7 @@ module PeterGate
 
         class_eval do
           def check_access
-            perms(self.class.controller_rules)
+            permissions(self.class.controller_rules)
           end
         end
       end
@@ -59,8 +59,6 @@ module PeterGate
       end
     end
 
-    alias_method :perms, :permissions
-
     def logged_in?(*roles)
       current_user && (roles & current_user.roles).any?
     end
@@ -85,6 +83,8 @@ module PeterGate
           def available_roles
             @available_roles
           end
+
+          const_set('ROLES', available_roles)
         end
 
 
