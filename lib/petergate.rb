@@ -26,6 +26,7 @@ module Petergate
       end
     end
 
+    # Look into using Controller.action_methods instead
     AllRest = [:show, :index, :new, :edit, :update, :create, :destroy]
 
     def self.included(base)
