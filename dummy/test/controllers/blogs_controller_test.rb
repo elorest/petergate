@@ -68,7 +68,9 @@ describe BlogsController do
       get :new
       assert_response 302
       flash[:notice].must_equal "Permission Denied"
+    end
 
+    it "gets forbidden and no redirect with json format on new" do
       assert_webservice_is_forbiddden do |format|
         get :new, format: format
       end
@@ -85,22 +87,14 @@ describe BlogsController do
       end
     end
 
-    it "doesn't show blog" do
+    it "can see show blog" do
       get :show, id: blog
-      assert_response 302
-
-      assert_webservice_is_forbiddden do |format|
-        get :show, id: blog, format: format
-      end
+      assert_response :success
     end
 
     it "can't get to edit page" do
       get :edit, id: blog
       assert_response 302
-
-      assert_webservice_is_forbiddden do |format|
-        get :show, id: blog, format: format
-      end
     end
 
     it "can't update blog" do
@@ -118,8 +112,52 @@ describe BlogsController do
         assert_redirected_to root_path
 
         assert_webservice_is_forbiddden do |format|
-          put :update, format: format, id: blog, blog: { content: blog.content, title: blog.title }
+          delete :destroy, format: format, id: blog
         end
+      end
+    end
+  end
+
+  describe "Make sure guests can't see what they shouldn't." do
+    let(:blog) { blogs :one }
+
+    it "guest can see index" do
+      get :index
+      assert_response :success
+      assert_not_nil assigns(:blogs)
+    end
+
+    it "gets permission denied on new" do
+      get :new
+      assert_response 302
+    end
+
+    it "doesn't allow plain user to create blog post" do
+      assert_no_difference('Blog.count') do
+        post :create, blog: { content: blog.content, title: blog.title }
+        assert_redirected_to "/users/sign_in"
+      end
+    end
+
+    it "doesn't show blog" do
+      get :show, id: blog
+      assert_response 302
+    end
+
+    it "can't get to edit page" do
+      get :edit, id: blog
+      assert_response 302
+    end
+
+    it "can't update blog" do
+      put :update, id: blog, blog: { content: blog.content, title: blog.title }
+      assert_redirected_to "/users/sign_in"
+    end
+
+    it "can't destroy blog" do
+      assert_no_difference('Blog.count') do
+        delete :destroy, id: blog
+        assert_redirected_to "/users/sign_in"
       end
     end
   end
