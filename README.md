@@ -7,38 +7,31 @@ Easy to use and read action and content based authorizations.
 Installation
 ------
 
-Add this line to your application's Gemfile:
+######Add this line to your application's Gemfile:
 
     gem 'petergate'
 
-And then execute:
+######And then execute:
 
     bundle
 
-Or install it yourself as:
+######Or install it yourself as:
 
     gem install petergate
+######Setup Authentication
 
+Make sure your user model is defined in
+    app/models/user.rb
+and called User.
 
-  Option 1. [Devise](https://github.com/plataformatec/devise) Setup 
-------
-
-If you are using devise just make sure you're model is called User then run generator to install petergate.
-
-
-
-  Option 2: Other Authentication Methods
-------
-
-You'll need to make sure that you have a user.rb model and the following methods in your project:
+If you're using [devise](https://github.com/plataformatec/devise) you're in luck, otherwise you'll have to add following methods to your project:
 
     user_signed_in?
     current_user
     after_sign_in_path_for(current_user)
     authenticate_user!
 
-  Run Generators
-------
+######Finally you can run the generators
 
     rails g petergate:install
     rake db:migrate
