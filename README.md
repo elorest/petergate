@@ -2,6 +2,8 @@
 
 Easy to use and read action and content based authorizations.
 
+[![Build Status](https://travis-ci.org/isaacsloan/petergate.svg)](https://travis-ci.org/isaacsloan/petergate)
+
 Installation
 ------
 
