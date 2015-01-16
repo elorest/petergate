@@ -1,5 +1,7 @@
 # Petergate
 
+[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/isaacsloan/petergate?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 Easy to use and read action and content based authorizations.
 
 [![Build Status](https://travis-ci.org/isaacsloan/petergate.svg)](https://travis-ci.org/isaacsloan/petergate)
