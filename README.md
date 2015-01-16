@@ -18,9 +18,27 @@ And then execute:
 Or install it yourself as:
 
     gem install petergate
-Make sure you already have a User model setup. Works great with [devise](https://github.com/plataformatec/devise).
 
-Run generator to install it.
+
+  Option 1. [Devise](https://github.com/plataformatec/devise) Setup 
+------
+
+If you are using devise just make sure you're model is called User then run generator to install petergate.
+
+
+
+  Option 2: Other Authentication Methods
+------
+
+You'll need to make sure that you have a user.rb model and the following methods in your project:
+
+    user_signed_in?
+    current_user
+    after_sign_in_path_for(current_user)
+    authenticate_user!
+
+  Run Generators
+------
 
     rails g petergate:install
     rake db:migrate
