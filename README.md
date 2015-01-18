@@ -4,7 +4,7 @@
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/isaacsloan/petergate?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 
-> "If you like the straight forward and effective nature of [Strong Parameters](https://github.com/rails/strong_parameters) and feel that [cancan](https://github.com/ryanb/cancan) is overkill for your project then you'll love [Petergate's](https://github.com/isaacsloan/petergate) easy to use and read action and content based authorizations."
+> "If you like the straight forward and effective nature of [Strong Parameters](https://github.com/rails/strong_parameters) and suspect that [cancan](https://github.com/ryanb/cancan) might be overkill for your project then you'll love [Petergate's](https://github.com/isaacsloan/petergate) easy to use and read action and content based authorizations."
 >
 > -- <cite>I proclaim optimistically</cite>
 
