@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.org/isaacsloan/petergate.svg)](https://travis-ci.org/isaacsloan/petergate)
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/isaacsloan/petergate?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Gem Version](https://badge.fury.io/rb/petergate.svg)](http://badge.fury.io/rb/petergate)
 
 
 > "If you like the straight forward and effective nature of [Strong Parameters](https://github.com/rails/strong_parameters) and suspect that [cancan](https://github.com/ryanb/cancan) might be overkill for your project then you'll love [Petergate's](https://github.com/isaacsloan/petergate) easy to use and read action and content based authorizations."
