@@ -9,7 +9,7 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Isaac Sloan"]
   spec.email         = ["isaac@isaacsloan.com"]
   spec.summary       = %q{Authorization system allowing verbose easy read controller syntax.}
-  spec.description   = %q{Authorization system.}
+  spec.description   = %q{If you like the straight forward and effective nature of Strong Parameters and suspect that CanCan might be overkill for your project then you'll love Petergate's easy to use and read action and content based authorizations.}
   spec.homepage      = "https://github.com/isaacsloan/petergate"
   spec.license       = "MIT"
 
