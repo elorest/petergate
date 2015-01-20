@@ -1,24 +1,42 @@
 # Petergate
 
-Easy to use and read action and content based authorizations.
+[![Build Status](https://travis-ci.org/isaacsloan/petergate.svg)](https://travis-ci.org/isaacsloan/petergate)
+[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/isaacsloan/petergate?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Gem Version](https://badge.fury.io/rb/petergate.svg)](http://badge.fury.io/rb/petergate)
+
+
+> "If you like the straight forward and effective nature of [Strong Parameters](https://github.com/rails/strong_parameters) and suspect that [cancan](https://github.com/ryanb/cancan) might be overkill for your project then you'll love [Petergate's](https://github.com/isaacsloan/petergate) easy to use and read action and content based authorizations."
+>
+> -- <cite>I proclaim optimistically</cite>
 
 Installation
 ------
 
-Add this line to your application's Gemfile:
+######Add this line to your application's Gemfile:
 
     gem 'petergate'
 
-And then execute:
+######And then execute:
 
     bundle
 
-Or install it yourself as:
+######Or install it yourself as:
 
     gem install petergate
-Make sure you already have a User model setup. Works great with [devise](https://github.com/plataformatec/devise).
+######Setup Authentication
 
-Run generator to install it.
+Make sure your user model is defined in
+    app/models/user.rb
+and called User.
+
+If you're using [devise](https://github.com/plataformatec/devise) you're in luck, otherwise you'll have to add following methods to your project:
+
+    user_signed_in?
+    current_user
+    after_sign_in_path_for(current_user)
+    authenticate_user!
+
+######Finally you can run the generators
 
     rails g petergate:install
     rake db:migrate

@@ -1,6 +1,7 @@
 require "petergate/version"
+require "petergate/railtie"
 
-module PeterGate
+module Petergate
   module ControllerMethods
     module ClassMethods
       def access(rules = {}, &block)
@@ -25,6 +26,7 @@ module PeterGate
       end
     end
 
+    # Look into using Controller.action_methods instead
     AllRest = [:show, :index, :new, :edit, :update, :create, :destroy]
 
     def self.included(base)
@@ -110,9 +112,9 @@ module PeterGate
 end
 
 class ActionController::Base
-  include PeterGate::ControllerMethods
+  include Petergate::ControllerMethods
 end
 
 class ActiveRecord::Base
-  include PeterGate::UserMethods
+  include Petergate::UserMethods
 end
