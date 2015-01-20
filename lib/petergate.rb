@@ -4,6 +4,12 @@ require "petergate/railtie"
 module Petergate
   module ControllerMethods
     module ClassMethods
+      def const_missing(const_name)
+        super unless const_name == :AllRest
+        warn "`AllRest` has been deprecated. Use `ALLREST` instead."
+        ALLREST
+      end
+
       def access(rules = {}, &block)
         if block
           b_rules = block.call
@@ -27,7 +33,7 @@ module Petergate
     end
 
     # Look into using Controller.action_methods instead
-    AllRest = [:show, :index, :new, :edit, :update, :create, :destroy]
+    ALLREST = [:show, :index, :new, :edit, :update, :create, :destroy]
 
     def self.included(base)
       base.extend(ClassMethods)
