@@ -54,6 +54,9 @@ Setup permissions in your controllers the same as you would for a before filter 
 
 ```ruby
 access all: [:show, :index], user: ALLREST
+
+# one other options that might seem a bit weird is to put a group of roles in an array:
+access [:all, :user] => [:show, :index]
 ```
 
 Inside your views you can use logged_in?(:admin, :customer, :etc) to show or hide content.
