@@ -1,6 +1,9 @@
 require "test_helper"
 
 describe BlogsController do
+  ################################################################################
+  # ADMIN ROLE
+  ################################################################################
   describe "Test that everything works if admin is logged in" do
     before do
       create_admin_and_login
@@ -51,6 +54,9 @@ describe BlogsController do
     end
   end
 
+  ################################################################################
+  # USER ROLE
+  ################################################################################
   describe "Make sure plain users can't see what they shouldn't." do
     before do
       create_user_and_login
@@ -118,6 +124,9 @@ describe BlogsController do
     end
   end
 
+  ################################################################################
+  # GUEST ROLE
+  ################################################################################
   describe "Make sure guests can't see what they shouldn't." do
     let(:blog) { blogs :one }
 
@@ -159,6 +168,59 @@ describe BlogsController do
         delete :destroy, id: blog
         assert_redirected_to "/users/sign_in"
       end
+    end
+  end
+
+  ################################################################################
+  # COMPANY_ADMIN ROLE
+  ################################################################################
+  describe "Test that everything works if company_admin is logged in" do
+    before do
+      create_company_admin_and_login
+    end
+
+    let(:blog) { blogs :one }
+
+    it "gets index" do
+      get :index
+      assert_response :success
+      assert_not_nil assigns(:blogs)
+    end
+
+    it "gets new" do
+      get :new
+      assert_response :success
+    end
+
+    it "creates blog" do
+      assert_difference('Blog.count') do
+        post :create, blog: { content: blog.content, title: blog.title }
+      end
+
+      assert_redirected_to blog_path(assigns(:blog))
+    end
+
+    it "shows blog" do
+      get :show, id: blog
+      assert_response :success
+    end
+
+    it "gets edit" do
+      get :edit, id: blog
+      assert_response :success
+    end
+
+    it "updates blog" do
+      put :update, id: blog, blog: { content: blog.content, title: blog.title }
+      assert_redirected_to blog_path(assigns(:blog))
+    end
+
+    it "can't destroy blog" do
+      assert_no_difference('Blog.count', -1) do
+        delete :destroy, id: blog
+      end
+
+      assert_redirected_to root_path
     end
   end
 
