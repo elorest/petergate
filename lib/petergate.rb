@@ -10,6 +10,14 @@ module Petergate
         ALLREST
       end
 
+      def all_actions
+        ->{self.action_methods.to_a.map(&:to_sym) - [:check_access, :title]} 
+      end
+
+      def except_actions(arr = [])
+        ->{all_actions.call - arr}
+      end
+
       def access(rules = {}, &block)
         if block
           b_rules = block.call
@@ -59,7 +67,9 @@ module Petergate
 
     def permissions(rules = {all: [:index, :show], customer: [], wiring: []})
       # Allows Array's of keys for he same hash.
+      rules = rules.inject({}){|h, (k, v)| h.merge({k => (v.class == Proc ? v.call : v)})}
       rules = rules.inject({}){|h, (k, v)| k.class == Array ? h.merge(Hash[k.map{|kk| [kk, v]}]) : h.merge(k => v) }
+      raise
       case params[:action].to_sym
       when *(rules[:all]) # checks where the action can be seen by :all
         true
