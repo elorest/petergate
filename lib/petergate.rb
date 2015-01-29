@@ -5,9 +5,12 @@ module Petergate
   module ControllerMethods
     module ClassMethods
       def const_missing(const_name)
-        super unless [:AllRest, :ALLREST].include?(const_name)
-        warn "`AllRest` and `ALLREST` has been deprecated. Use :all instead."
-        ALLRESTDEP
+        if [:AllRest, :ALLREST].include?(const_name)
+          warn "`AllRest` and `ALLREST` has been deprecated. Use :all instead."
+          return ALLRESTDEP
+        else
+          return super 
+        end
       end
 
       def all_actions
