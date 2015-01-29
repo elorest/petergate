@@ -53,9 +53,9 @@ Usage
 Setup permissions in your controllers the same as you would for a before filter like so:
 
 ```ruby
-access all: [:show, :index], user: ALLREST
+access all: [:show, :index], user: {except: [:destroy]}, company_admin: :all
 
-# one other options that might seem a bit weird is to put a group of roles in an array:
+# one other option that might seem a bit weird is to put a group of roles in an array:
 access [:all, :user] => [:show, :index]
 ```
 
