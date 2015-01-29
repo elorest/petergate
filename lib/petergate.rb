@@ -65,11 +65,27 @@ module Petergate
       end
     end
 
-    def permissions(rules = {all: [:index, :show], customer: [], wiring: []})
+    def parse_permission_rules(rules)
+      rules = rules.inject({}) do |h, (k, v)| 
+        special_values = case v.class.to_s
+                         when "Symbol"
+                           v == :all ? self.action_methods.to_a.map(&:to_sym) - [:check_access, :title] : raise("No action for: #{v}")
+                         when "Hash"
+                           v[:except].present? ? (self.action_methods.to_a.map(&:to_sym) - [:check_access, :title]) - v[:except] : raise("Invalid values for except: #{v.values}")
+                         when "Array"
+                           v
+                         else
+                           raise("No action for: #{v}")
+                         end
+
+        h.merge({k => special_values})
+      end
       # Allows Array's of keys for he same hash.
-      rules = rules.inject({}){|h, (k, v)| h.merge({k => (v.class == Proc ? v.call : v)})}
-      rules = rules.inject({}){|h, (k, v)| k.class == Array ? h.merge(Hash[k.map{|kk| [kk, v]}]) : h.merge(k => v) }
-      raise
+      rules.inject({}){|h, (k, v)| k.class == Array ? h.merge(Hash[k.map{|kk| [kk, v]}]) : h.merge(k => v) }
+    end
+
+    def permissions(rules = {all: [:index, :show], customer: [], wiring: []})
+      rules = parse_permission_rules(rules)
       case params[:action].to_sym
       when *(rules[:all]) # checks where the action can be seen by :all
         true
