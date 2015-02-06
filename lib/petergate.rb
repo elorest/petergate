@@ -129,7 +129,7 @@ module Petergate
           end
 
           def roles=(v)
-            self[:roles] = v.map(&:to_sym).to_a.select{|r| r.size > 0 && available_roles.include?(r)}
+            self[:roles] = Array(v).map(&:to_sym).to_a.select{|r| r.size > 0 && available_roles.include?(r)}
           end
 
           def roles
