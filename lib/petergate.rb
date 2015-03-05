@@ -47,18 +47,13 @@ module Petergate
 
     def self.included(base)
       base.extend(ClassMethods)
-      base.helper_method :logged_in?
+      base.helper_method :logged_in?, :forbidden!
       base.before_filter do 
         unless logged_in?(:admin)
           message= defined?(check_access) ? check_access : true
           if message.is_a?(String) || message == false
             if user_signed_in?
-              respond_to do |format|
-                format.any(:js, :json, :xml) { render nothing: true, status: :forbidden }
-                format.html do
-                  redirect_to (request.referrer || after_sign_in_path_for(current_user)), :notice => message || "Permission Denied"
-                end
-              end
+              forbidden! message
             else
               authenticate_user!
             end
@@ -104,6 +99,14 @@ module Petergate
       current_user && (roles & current_user.roles).any?
     end
 
+    def forbidden!(msg = nil)
+      respond_to do |format|
+        format.any(:js, :json, :xml) { render nothing: true, status: :forbidden }
+        format.html do
+          redirect_to (request.referrer || after_sign_in_path_for(current_user)), notice: msg || 'Permission Denied'
+        end
+      end
+    end
   end
 
   module UserMethods
