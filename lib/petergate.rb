@@ -63,7 +63,7 @@ module Petergate
     end
 
     def authenticate_user_object
-      self.send("authenticate_#{PG::USEROBJECT}!")
+      self.send("authenticate_#{Petergate::USEROBJECT}!")
     end
 
     def parse_permission_rules(rules)
@@ -127,7 +127,7 @@ module Petergate
 
         instance_eval do
           const_set('ROLES', options[:roles])
-          const_set("::Petergate::USEROBJECT", self.class.to_s.downcase)
+          ::Petergate.const_set("USEROBJECT", self.class.to_s.downcase)
         end
 
 
