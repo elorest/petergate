@@ -103,7 +103,8 @@ module Petergate
       respond_to do |format|
         format.any(:js, :json, :xml) { render nothing: true, status: :forbidden }
         format.html do
-          redirect_to (request.referrer || after_sign_in_path_for(current_user)), notice: msg || 'Permission Denied'
+          destination = current_user.present? ? request.referrer || after_sign_in_path_for(current_user) : root_path
+          redirect_to destination, notice: msg || 'Permission Denied'
         end
       end
     end
