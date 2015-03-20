@@ -127,6 +127,7 @@ module Petergate
 
         instance_eval do
           const_set('ROLES', options[:roles])
+          const_set("::Petergate::USEROBJECT", self.class.to_s.downcase)
         end
 
 
