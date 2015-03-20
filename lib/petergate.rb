@@ -62,6 +62,10 @@ module Petergate
       end
     end
 
+    def authenticate_user_object
+      self.send("authenticate_#{PG::USEROBJECT}!")
+    end
+
     def parse_permission_rules(rules)
       rules = rules.inject({}) do |h, (k, v)| 
         special_values = case v.class.to_s
