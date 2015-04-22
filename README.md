@@ -5,7 +5,7 @@
 [![Gem Version](https://badge.fury.io/rb/petergate.svg)](http://badge.fury.io/rb/petergate)
 
 
-> "If you like the straight forward and effective nature of [Strong Parameters](https://github.com/rails/strong_parameters) and suspect that [cancan](https://github.com/ryanb/cancan) might be overkill for your project then you'll love [Petergate's](https://github.com/isaacsloan/petergate) easy to use and read action and content based authorizations."
+> "If you like the straight forward and effective nature of [Strong Parameters](https://github.com/rails/strong_parameters) and suspect that [cancan](https://github.com/ryanb/cancan) might be overkill for your project then you'll love [Petergate's](https://github.com/isaacsloan/petergate) easy to use and read action and content based authorizations. It's magnificent!"
 >
 > -- <cite>Romans 3:41</cite>
 
