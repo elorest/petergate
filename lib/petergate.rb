@@ -14,11 +14,11 @@ module Petergate
       end
 
       def all_actions
-        ->{self.action_methods.to_a.map(&:to_sym) - [:check_access, :title]} 
+        ->{self.action_methods.to_a.map(&:to_sym) - [:check_access, :title]}.call
       end
 
       def except_actions(arr = [])
-        ->{all_actions.call - arr}
+        all_actions - arr
       end
 
       def access(rules = {}, &block)
@@ -62,17 +62,13 @@ module Petergate
       end
     end
 
-    def authenticate_user_object
-      self.send("authenticate_#{Petergate::USEROBJECT}!")
-    end
-
     def parse_permission_rules(rules)
       rules = rules.inject({}) do |h, (k, v)| 
         special_values = case v.class.to_s
                          when "Symbol"
-                           v == :all ? self.action_methods.to_a.map(&:to_sym) - [:check_access, :title] : raise("No action for: #{v}")
+                           v == :all ? self.class.all_actions : raise("No action for: #{v}")
                          when "Hash"
-                           v[:except].present? ? (self.action_methods.to_a.map(&:to_sym) - [:check_access, :title]) - v[:except] : raise("Invalid values for except: #{v.values}")
+                           v[:except].present? ? self.class.except_actions(v[:except]) : raise("Invalid values for except: #{v.values}")
                          when "Array"
                            v
                          else
@@ -127,7 +123,6 @@ module Petergate
 
         instance_eval do
           const_set('ROLES', options[:roles])
-          ::Petergate.const_set("USEROBJECT", self.class.to_s.downcase)
         end
 
 
