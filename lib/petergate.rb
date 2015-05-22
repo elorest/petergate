@@ -21,7 +21,12 @@ module Petergate
         all_actions - arr
       end
 
-      def access(rules = {}, &block)
+      def access(*params, &block)
+        rules = params.last || {user: :all}
+        unless (class_name = params.first).is_a? Symbol
+          class_name = :user
+        end
+
         if block
           b_rules = block.call
           rules = rules.merge(b_rules) if b_rules.is_a?(Hash)
@@ -69,11 +74,11 @@ module Petergate
                            v == :all ? self.class.all_actions : raise("No action for: #{v}")
                          when "Hash"
                            v[:except].present? ? self.class.except_actions(v[:except]) : raise("Invalid values for except: #{v.values}")
-                         when "Array"
-                           v
-                         else
-                           raise("No action for: #{v}")
-                         end
+                           when "Array"
+                             v
+                           else
+                             raise("No action for: #{v}")
+                           end
 
         h.merge({k => special_values})
       end
