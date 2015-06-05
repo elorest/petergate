@@ -34,6 +34,11 @@ module Petergate
 
         instance_eval do
           @_controller_rules = rules
+          @_user_object = class_name
+
+          def user_object
+            @_user_object 
+          end
 
           def controller_rules
             @_controller_rules
@@ -43,6 +48,10 @@ module Petergate
         class_eval do
           def check_access
             permissions(self.class.controller_rules)
+          end
+
+          def user_method(um)
+            self.send(um.gsub!("user", self.class.user_object.to_s))
           end
         end
       end
@@ -57,10 +66,10 @@ module Petergate
         unless logged_in?(:admin)
           message= defined?(check_access) ? check_access : true
           if message.is_a?(String) || message == false
-            if user_signed_in?
+            if user_method("user_signed_in?")
               forbidden! message
             else
-              authenticate_user!
+              user_method("authenticate_user!")
             end
           end
         end
@@ -92,8 +101,8 @@ module Petergate
       when *(rules[:all]) # checks where the action can be seen by :all
         true
       when *(rules[:user]) # checks if the action can be seen for all users
-        user_signed_in?
-      when *(rules[(user_signed_in? ? current_user.role.to_sym : :all)]) # checks if action can be seen by the  current_users role. If the user isn't logged in check if it can be seen by :all
+        user_method("user_signed_in?")
+      when *(rules[(user_method("user_signed_in?") ? user_method("current_user").role.to_sym : :all)]) # checks if action can be seen by the  current_users role. If the user isn't logged in check if it can be seen by :all
         true
       else
         false
@@ -101,14 +110,14 @@ module Petergate
     end
 
     def logged_in?(*roles)
-      current_user && (roles & current_user.roles).any?
+      user_method("current_user") && (roles & user_method("current_user").roles).any?
     end
 
     def forbidden!(msg = nil)
       respond_to do |format|
         format.any(:js, :json, :xml) { render nothing: true, status: :forbidden }
         format.html do
-          destination = current_user.present? ? request.referrer || after_sign_in_path_for(current_user) : root_path
+          destination = user_method("current_user").present? ? request.referrer || after_sign_in_path_for(user_method("current_user")) : root_path
           redirect_to destination, notice: msg || 'Permission Denied'
         end
       end
