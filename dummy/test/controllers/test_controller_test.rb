@@ -2,7 +2,7 @@ require "test_helper"
 
 class TestController < ApplicationController
   skip_before_filter :verify_authenticity_token
-  access all: :all
+  # access all: :all
 
   def index
     forbidden! params[:msg]

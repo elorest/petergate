@@ -109,6 +109,10 @@ module Petergate
       end
     end
 
+    def user_method(um)
+      self.send(um)
+    end
+
     def logged_in?(*roles)
       user_method("current_user") && (roles & user_method("current_user").roles).any?
     end
