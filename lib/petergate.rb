@@ -113,10 +113,12 @@ module Petergate
       self.send(um)
     end
 
-    def logged_in?(*params)
-      roles = params.select{|p| p.is_a? :symbol}
-      class_name = params.last.is_a?(Hash) ? params.last[:class_name] : :user
-      user_method("current_#{class_name}") && (roles & user_method("current_#{class_name}").roles).any?
+    #TODO: Fix this.
+    def logged_in?(*roles)
+      # roles = params.select{|p| p.is_a? :symbol}
+      # class_name = params.last.is_a?(Hash) ? params.last[:class_name] : :user
+      # user_method("current_#{class_name}") && (roles & user_method("current_#{class_name}").roles).any?
+      current_user && (roles & current_user.roles).any?
     end
 
     def forbidden!(msg = nil)
