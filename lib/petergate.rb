@@ -33,6 +33,10 @@ module Petergate
           def controller_rules
             @_controller_rules
           end
+
+          def inherited(subclass)
+            subclass.instance_variable_set("@_controller_rules", instance_variable_get("@_controller_rules"))
+          end
         end
 
         class_eval do
