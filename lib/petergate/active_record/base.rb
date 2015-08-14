@@ -30,7 +30,7 @@ module Petergate
 
             if multiple
               def roles=(v)
-                self[:roles] = (Array(v).map(&:to_sym).to_a.select{|r| r.size > 0 && available_roles.include?(r)} + [:user]).uniq
+                self[:roles] = (Array(v).map(&:to_sym).select{|r| r.size > 0 && available_roles.include?(r)} + [:user]).uniq
               end
             else
               def roles=(v)
