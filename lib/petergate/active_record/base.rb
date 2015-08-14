@@ -6,14 +6,20 @@ module Petergate
       end
 
       module ClassMethods
-        def petergate(options = {roles: [:admin]})
-          serialize :roles
-          after_initialize do
-            self[:roles] ||= []
+        def petergate(roles: [:admin], multiple: true)
+          if multiple
+            serialize :roles
+            after_initialize do
+              self[:roles] ||= [:user]
+            end
+          else
+            after_initialize do
+              self[:roles] ||= :user 
+            end
           end
 
           instance_eval do
-            const_set('ROLES', options[:roles])
+            const_set('ROLES', (roles + [:user]).uniq)
           end
 
 
@@ -22,12 +28,23 @@ module Petergate
               self.class::ROLES
             end
 
-            def roles=(v)
-              self[:roles] = Array(v).map(&:to_sym).to_a.select{|r| r.size > 0 && available_roles.include?(r)}
-            end
+            if multiple
+              def roles=(v)
+                self[:roles] = (Array(v).map(&:to_sym).to_a.select{|r| r.size > 0 && available_roles.include?(r)} + [:user]).uniq
+              end
+            else
+              def roles=(v)
+                self[:roles] = case v.class.to_s
+                               when "String", "Symbol"
+                                 v
+                               when "Array"
+                                 v.first
+                               end
+              end
 
-            def roles
-              self[:roles] + [:user]
+              def roles
+                Array(self[:roles].to_sym)
+              end
             end
 
             def role

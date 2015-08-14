@@ -21,17 +21,17 @@ end
 class ActionController::TestCase
   include Devise::TestHelpers
   def create_user_and_login(email: "user@example.com", password: "youllneverguess")
-    u = User.create(email: email, password: password, password_confirmation: password)
+    u = User.create(email: email, password: password, password_confirmation: password, roles: :user)
     sign_in(u) 
   end
 
   def create_admin_and_login(email: "user@example.com", password: "youllneverguess")
-    u = User.create(email: email, password: password, password_confirmation: password, roles: [:admin])
+    u = User.create(email: email, password: password, password_confirmation: password, roles: :admin)
     sign_in(u) 
   end
 
   def create_company_admin_and_login(email: "user@example.com", password: "youllneverguess")
-    u = User.create(email: email, password: password, password_confirmation: password, roles: [:company_admin])
+    u = User.create(email: email, password: password, password_confirmation: password, roles: :company_admin)
     sign_in(u) 
   end
 end

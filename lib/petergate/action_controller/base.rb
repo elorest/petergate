@@ -71,11 +71,11 @@ module Petergate
                              v == :all ? self.class.all_actions : raise("No action for: #{v}")
                            when "Hash"
                              v[:except].present? ? self.class.except_actions(v[:except]) : raise("Invalid values for except: #{v.values}")
-                             when "Array"
-                               v
-                             else
-                               raise("No action for: #{v}")
-                             end
+                           when "Array"
+                             v
+                           else
+                             raise("No action for: #{v}")
+                           end
 
           h.merge({k => special_values})
         end
