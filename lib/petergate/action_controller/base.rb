@@ -71,11 +71,11 @@ module Petergate
                              v == :all ? self.class.all_actions : raise("No action for: #{v}")
                            when "Hash"
                              v[:except].present? ? self.class.except_actions(v[:except]) : raise("Invalid values for except: #{v.values}")
-                           when "Array"
-                             v
-                           else
-                             raise("No action for: #{v}")
-                           end
+                             when "Array"
+                               v
+                             else
+                               raise("No action for: #{v}")
+                             end
 
           h.merge({k => special_values})
         end
@@ -85,16 +85,12 @@ module Petergate
 
       def permissions(rules = {all: [:index, :show], customer: [], wiring: []})
         rules = parse_permission_rules(rules)
-        case params[:action].to_sym
-        when *(rules[:all]) # checks where the action can be seen by :all
-          true
-        when *(rules[:user]) # checks if the action can be seen for all users
-          user_signed_in?
-        when *(rules[(user_signed_in? ? current_user.role.to_sym : :all)]) # checks if action can be seen by the  current_users role. If the user isn't logged in check if it can be seen by :all
-          true
-        else
-          false
-        end
+        allowances = [rules[:all]]
+        current_user.roles.each do |role|
+          allowances << rules[role]
+        end if logged_in?(:user)
+        
+        allowances.flatten.compact.include?(params[:action].to_sym)
       end
 
       def logged_in?(*roles)
