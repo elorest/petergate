@@ -71,25 +71,27 @@ module Petergate
                              v == :all ? self.class.all_actions : raise("No action for: #{v}")
                            when "Hash"
                              v[:except].present? ? self.class.except_actions(v[:except]) : raise("Invalid values for except: #{v.values}")
-                             when "Array"
-                               v
-                             else
-                               raise("No action for: #{v}")
-                             end
+                           when "Array"
+                             v
+                           else
+                             raise("No action for: #{v}")
+                           end
 
           h.merge({k => special_values})
         end
         # Allows Array's of keys for he same hash.
-        rules.inject({}){|h, (k, v)| k.class == Array ? h.merge(Hash[k.map{|kk| [kk, v]}]) : h.merge(k => v) }
+        rules = rules.inject({}){|h, (k, v)| k.class == Array ? h.merge(Hash[k.map{|kk| [kk, v]}]) : h.merge(k => v) }
+        message = rules.delete(:message)
+        return rules, message 
       end
 
       def permissions(rules = {all: [:index, :show], customer: [], wiring: []})
-        rules = parse_permission_rules(rules)
+        rules, message = parse_permission_rules(rules)
         allowances = [rules[:all]]
         current_user.roles.each do |role|
           allowances << rules[role]
         end if logged_in?(:user)
-        allowances.flatten.compact.include?(params[:action].to_sym)
+        allowances.flatten.compact.include?(params[:action].to_sym) ? true : message
       end
 
       def logged_in?(*roles)
