@@ -88,8 +88,6 @@ PeterGate is written and maintaned by Isaac Sloan and friends.
 
 Currently funded and maintained by [RingSeven](http://ringseven.com)
 
-![RingSeven](https://avatars1.githubusercontent.com/u/8309133?v=3&s=200)
-
 
 ## Contributing
 
