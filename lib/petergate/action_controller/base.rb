@@ -34,11 +34,12 @@ module Petergate
             end
 
             def controller_message
-              @_controller_message
+              @_controller_message || "Permission Denied"
             end
 
             def inherited(subclass)
               subclass.instance_variable_set("@_controller_rules", instance_variable_get("@_controller_rules"))
+              subclass.instance_variable_set("@_controller_message", instance_variable_get("@_controller_message"))
             end
           end
 
@@ -76,11 +77,11 @@ module Petergate
                              v == :all ? self.class.all_actions : raise("No action for: #{v}")
                            when "Hash"
                              v[:except].present? ? self.class.except_actions(v[:except]) : raise("Invalid values for except: #{v.values}")
-                           when "Array"
-                             v
-                           else
-                             raise("No action for: #{v}")
-                           end
+                             when "Array"
+                               v
+                             else
+                               raise("No action for: #{v}")
+                             end
 
           h.merge({k => special_values})
         end
@@ -101,12 +102,16 @@ module Petergate
         current_user && (roles & current_user.roles).any?
       end
 
+      def custom_message
+        defined?(self.class.controller_message) ? self.class.controller_message : 'Permission Denied'
+      end
+
       def forbidden!(msg = nil)
         respond_to do |format|
           format.any(:js, :json, :xml) { render nothing: true, status: :forbidden }
           format.html do
             destination = current_user.present? ? request.referrer || after_sign_in_path_for(current_user) : root_path
-            redirect_to destination, notice: (msg || self.class.controller_message || 'Permission Denied')
+            redirect_to destination, notice: (msg || custom_message)
           end
         end
       end
