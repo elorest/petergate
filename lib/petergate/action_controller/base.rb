@@ -27,9 +27,14 @@ module Petergate
 
           instance_eval do
             @_controller_rules = rules
+            @_controller_message = rules.delete(:message)
 
             def controller_rules
               @_controller_rules
+            end
+
+            def controller_message
+              @_controller_message
             end
 
             def inherited(subclass)
@@ -53,7 +58,7 @@ module Petergate
         base.before_filter do 
           unless logged_in?(:admin)
             message= defined?(check_access) ? check_access : true
-            if message.is_a?(String) || message.nil?
+            if message == false || message.is_a?(String)
               if user_signed_in?
                 forbidden! message
               else
@@ -84,13 +89,12 @@ module Petergate
       end
 
       def permissions(rules = {all: [:index, :show], customer: [], wiring: []})
-        message = rules.delete(:message)
         rules = parse_permission_rules(rules)
         allowances = [rules[:all]]
         current_user.roles.each do |role|
           allowances << rules[role]
         end if logged_in?(:user)
-        allowances.flatten.compact.include?(params[:action].to_sym) || message
+        allowances.flatten.compact.include?(params[:action].to_sym)
       end
 
       def logged_in?(*roles)
@@ -102,7 +106,7 @@ module Petergate
           format.any(:js, :json, :xml) { render nothing: true, status: :forbidden }
           format.html do
             destination = current_user.present? ? request.referrer || after_sign_in_path_for(current_user) : root_path
-            redirect_to destination, notice: (msg || 'Permission Denied')
+            redirect_to destination, notice: (msg || self.class.controller_message || 'Permission Denied')
           end
         end
       end
