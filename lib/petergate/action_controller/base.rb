@@ -53,7 +53,7 @@ module Petergate
         base.before_filter do 
           unless logged_in?(:admin)
             message= defined?(check_access) ? check_access : true
-            if message.is_a?(String) || message == false
+            if message.is_a?(String) || message.nil?
               if user_signed_in?
                 forbidden! message
               else
@@ -81,17 +81,16 @@ module Petergate
         end
         # Allows Array's of keys for he same hash.
         rules = rules.inject({}){|h, (k, v)| k.class == Array ? h.merge(Hash[k.map{|kk| [kk, v]}]) : h.merge(k => v) }
-        message = rules.delete(:message)
-        return rules, message 
       end
 
       def permissions(rules = {all: [:index, :show], customer: [], wiring: []})
-        rules, message = parse_permission_rules(rules)
+        message = rules.delete(:message)
+        rules = parse_permission_rules(rules)
         allowances = [rules[:all]]
         current_user.roles.each do |role|
           allowances << rules[role]
         end if logged_in?(:user)
-        allowances.flatten.compact.include?(params[:action].to_sym) ? true : message
+        allowances.flatten.compact.include?(params[:action].to_sym) || message
       end
 
       def logged_in?(*roles)
@@ -103,7 +102,7 @@ module Petergate
           format.any(:js, :json, :xml) { render nothing: true, status: :forbidden }
           format.html do
             destination = current_user.present? ? request.referrer || after_sign_in_path_for(current_user) : root_path
-            redirect_to destination, notice: msg || 'Permission Denied'
+            redirect_to destination, notice: (msg || 'Permission Denied')
           end
         end
       end
