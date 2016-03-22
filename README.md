@@ -44,7 +44,7 @@ If you're using [devise](https://github.com/plataformatec/devise) you're in luck
 
 This will add: 
 ```ruby
-petergate(roles: [:admin])
+petergate(roles: [:admin], multiple: false) # default value is false
 ```
 to your User model. 
 
