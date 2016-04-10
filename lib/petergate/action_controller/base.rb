@@ -95,7 +95,7 @@ module Petergate
         current_user.roles.each do |role|
           allowances << rules[role]
         end if logged_in?(:user)
-        allowances.flatten.compact.include?(params[:action].to_sym)
+        allowances.flatten.compact.include?(action_name.to_sym)
       end
 
       def logged_in?(*roles)
