@@ -1,3 +1,3 @@
 module Petergate
-  VERSION = "1.3.6"
+  VERSION = "1.5.0"
 end

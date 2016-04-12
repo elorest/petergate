@@ -44,13 +44,30 @@ If you're using [devise](https://github.com/plataformatec/devise) you're in luck
 
 This will add: 
 ```ruby
-petergate(roles: [:admin], multiple: false) # default value is false
+petergate(roles: [:admin, editor], multiple: false) # default value is false
 ```
 to your User model. 
 
 Usage
 ------
+#####User Model
 
+Configure available roles by modifying this block at the top of your user.rb.
+
+```ruby
+############################################################################################
+## PeterGate Roles                                                                        ##
+## The :user role is added by default and shouldn't be included in this list.             ##
+## The :super_admin can access any page regardless of access settings. Use with caution!  ##
+## The multiple option can be set to true if you need users to have multiple roles.       ##
+petergate(roles: [:admin, :editor], multiple: false)                                      ##
+############################################################################################ 
+```
+
+Instance methods added to your User model include: `role, roles, roles=, available_roles`
+
+#####Controllers
+ 
 Setup permissions in your controllers the same as you would for a before filter like so:
 
 ```ruby
