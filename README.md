@@ -41,13 +41,9 @@ If you're using [devise](https://github.com/plataformatec/devise) you're in luck
 
     rails g petergate:install
     rake db:migrate
-
-This will add: 
-```ruby
-petergate(roles: [:admin, editor], multiple: false) # default value is false
-```
-to your User model. 
-
+    
+This will add a migration and insert petergate into your User model. 
+    
 Usage
 ------
 #####User Model
