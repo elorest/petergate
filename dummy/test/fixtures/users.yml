@@ -1,4 +1,4 @@
 admin:
   email: admin@example.com
   roles:
-    - super_admin
+    - root_admin

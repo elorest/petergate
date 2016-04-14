@@ -6,6 +6,7 @@ Gemfile.lock
 /doc/
 /pkg/
 /spec/reports/
+dummy/log/*
 dummy/tmp/*
 *.sqlite3
 *.bundle

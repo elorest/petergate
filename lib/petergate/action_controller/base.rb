@@ -57,7 +57,7 @@ module Petergate
         base.extend(ClassMethods)
         base.helper_method :logged_in?, :forbidden!
         base.before_filter do 
-          unless logged_in?(:super_admin)
+          unless logged_in?(:root_admin)
             message= defined?(check_access) ? check_access : true
             if message == false || message.is_a?(String)
               if user_signed_in?
