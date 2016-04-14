@@ -43,7 +43,7 @@ module Petergate
               end
 
               def roles
-                Array(self[:roles].to_sym)
+                Array(self[:roles].to_sym) | [:user]
               end
             end
 
