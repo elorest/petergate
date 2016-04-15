@@ -19,9 +19,8 @@ module Petergate
           end
 
           instance_eval do
-            const_set('ROLES', (roles + [:user]).uniq)
+            const_set('ROLES', (roles + [:user]).uniq) unless defined?(User::ROLES)
           end
-
 
           class_eval do
             def available_roles
@@ -44,14 +43,15 @@ module Petergate
             end
 
             def roles
-              case self[:roles].class.to_s
-              when "String", "Symbol"
-                [self[:roles].to_sym, :user]
-              when "Array"
-                super
-              else
-                [:user]
-              end
+              Array(self[:roles])
+              # case self[:roles].class.to_s
+              # when "String", "Symbol"
+              #   [self[:roles].to_sym, :user]
+              # when "Array"
+              #   super
+              # else
+              #   [:user]
+              # end
             end
 
             def role
