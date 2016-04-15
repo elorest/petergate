@@ -41,9 +41,16 @@ module Petergate
                                  v.first
                                end
               end
+            end
 
-              def roles
-                Array(self[:roles].to_sym) | [:user]
+            def roles
+              case self[:roles].class.to_s
+              when "String", "Symbol"
+                [self[:roles].to_sym, :user]
+              when "Array"
+                super
+              else
+                [:user]
               end
             end
 
