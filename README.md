@@ -93,6 +93,11 @@ def roles=(v)
 end
 ```
 
+If you want to change the unauthorized message you can add to the access line:
+
+```ruby
+access [:all, :user] => [:show, :index], message: "You shall not pass"
+```
 
 Credits
 -------
