@@ -60,10 +60,10 @@ module Petergate
           unless logged_in?(:root_admin)
             message= defined?(check_access) ? check_access : true
             if message == false || message.is_a?(String)
-              if user_signed_in?
+              if current_user || @user
                 forbidden! message
               else
-                authenticate_user!
+                unauthorized!
               end
             end
           end
@@ -104,6 +104,15 @@ module Petergate
 
       def custom_message
         defined?(self.class.controller_message) ? self.class.controller_message : 'Permission Denied'
+      end
+
+      def unauthorized!
+        respond_to do |format|
+          format.any(:js, :json, :xml) { render nothing: true, status: :unauthorized }
+          format.html do
+            authenticate_user! 
+          end
+        end
       end
 
       def forbidden!(msg = nil)
