@@ -1,27 +1,12 @@
 require "test_helper"
 
-class User < ActiveRecord::Base
-  ############################################################################################
-  ## PeterGate Roles                                                                        ##
-  ## The :user role is added by default and shouldn't be included in this list.             ##
-  ## The :root_admin can access any page regardless of access settings. Use with caution!   ##
-  ## The multiple option can be set to true if you need users to have multiple roles.       ##
-  petergate(roles: [:root_admin, :company_admin], multiple: false)                          ##
-  ############################################################################################ 
- 
-
-  # Include default devise modules. Others available are:
-  # :confirmable, :lockable, :timeoutable and :omniauthable
-  devise :database_authenticatable, :registerable,
-         :recoverable, :rememberable, :trackable, :validatable
-end
-
 describe BlogsController do
   ################################################################################
   # ADMIN ROLE
   ################################################################################
-  describe "Test that everything works if admin is logged in" do
+  describe "Singular: Test that everything works if admin is logged in" do
     before do
+      User.petergate(roles: [:root_admin, :company_admin], multiple: false)
       create_admin_and_login
     end
 
@@ -73,8 +58,9 @@ describe BlogsController do
   ################################################################################
   # USER ROLE
   ################################################################################
-  describe "Make sure plain users can't see what they shouldn't." do
+  describe "Singular: Make sure plain users can't see what they shouldn't." do
     before do
+      User.petergate(roles: [:root_admin, :company_admin], multiple: false)
       create_user_and_login
     end
 
@@ -141,57 +127,11 @@ describe BlogsController do
   end
 
   ################################################################################
-  # GUEST ROLE
-  ################################################################################
-  describe "Make sure guests can't see what they shouldn't." do
-    let(:blog) { blogs :one }
-
-    it "guest can see index" do
-      get :index
-      assert_response :success
-      assert_not_nil assigns(:blogs)
-    end
-
-    it "gets permission denied on new" do
-      get :new
-      assert_response 302
-    end
-
-    it "doesn't allow plain user to create blog post" do
-      assert_no_difference('Blog.count') do
-        post :create, blog: { content: blog.content, title: blog.title }
-        assert_redirected_to "/users/sign_in"
-      end
-    end
-
-    it "doesn't show blog" do
-      get :show, id: blog
-      assert_response 302
-    end
-
-    it "can't get to edit page" do
-      get :edit, id: blog
-      assert_response 302
-    end
-
-    it "can't update blog" do
-      put :update, id: blog, blog: { content: blog.content, title: blog.title }
-      assert_redirected_to "/users/sign_in"
-    end
-
-    it "can't destroy blog" do
-      assert_no_difference('Blog.count') do
-        delete :destroy, id: blog
-        assert_redirected_to "/users/sign_in"
-      end
-    end
-  end
-
-  ################################################################################
   # COMPANY_ADMIN ROLE
   ################################################################################
-  describe "Test that everything works if company_admin is logged in" do
+  describe "Singular: Test that everything works if company_admin is logged in" do
     before do
+      User.petergate(roles: [:root_admin, :company_admin], multiple: false)
       create_company_admin_and_login
     end
 
