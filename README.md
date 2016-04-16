@@ -12,19 +12,19 @@
 
 Installation
 ------
-
-######Add this line to your application's Gemfile:
+#####Get Gem
+Add this line to your application's Gemfile:
 
     gem 'petergate'
 
-######And then execute:
+And then execute:
 
     bundle
 
-######Or install it yourself as:
+Or install it yourself as:
 
     gem install petergate
-######Setup Authentication
+#####Prerequisites: Setup Authentication (Devise)
 
 Make sure your user model is defined in
     app/models/user.rb
@@ -37,7 +37,7 @@ If you're using [devise](https://github.com/plataformatec/devise) you're in luck
     after_sign_in_path_for(current_user)
     authenticate_user!
 
-######Finally you can run the generators
+#####Run the generators
 
     rails g petergate:install
     rake db:migrate
