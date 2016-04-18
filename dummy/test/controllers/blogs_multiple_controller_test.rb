@@ -57,7 +57,7 @@ describe BlogsController do
   ################################################################################
   # USER ROLE
   ################################################################################
-  describe "Muliple: Make sure plain users can't see what they shouldn't." do
+  describe "Multiple: Make sure plain users can't see what they shouldn't." do
     before do
       User.petergate(roles: [:root_admin, :company_admin], multiple: true)
       create_user_and_login
@@ -117,10 +117,9 @@ describe BlogsController do
       assert_no_difference('Blog.count') do
         delete :destroy, id: blog
         assert_redirected_to root_path
-
-        assert_webservice_is_forbiddden do |format|
-          delete :destroy, format: format, id: blog
-        end
+      end
+      assert_webservice_is_forbiddden do |format|
+        delete :destroy, format: format, id: blog
       end
     end
   end
@@ -140,6 +139,12 @@ describe BlogsController do
     it "gets permission denied on new" do
       get :new
       assert_response 302
+    end
+
+    it "json gets permission denied on new" do
+      assert_webservice_is_unauthorized do |format|
+        get :new, format: format
+      end
     end
 
     it "doesn't allow plain user to create blog post" do
@@ -232,6 +237,13 @@ describe BlogsController do
     [:js, :json, :xml].each do |format|
       block.call format
       assert_response :forbidden
+    end
+  end
+
+  def assert_webservice_is_unauthorized(&block)
+    [:js, :json, :xml].each do |format|
+      block.call format
+      assert_response :unauthorized
     end
   end
 end
