@@ -20,6 +20,16 @@ module Petergate
 
           instance_eval do
             const_set('ROLES', (roles + [:user]).uniq) unless defined?(User::ROLES)
+
+            if multiple
+              roles.each do |role|
+                define_singleton_method("role_#{role.to_s.pluralize}".downcase.to_sym){self.where("roles LIKE '%- :#{role}\n%'")}
+              end
+            else
+              roles.each do |role|
+                define_singleton_method("role_#{role.to_s.pluralize}".downcase.to_sym){self.where(roles: role)}
+              end
+            end
           end
 
           class_eval do
@@ -33,19 +43,20 @@ module Petergate
               end
             else
               def roles=(v)
-                self[:roles] = case v.class.to_s
-                               when "String", "Symbol"
-                                 v
-                               when "Array"
-                                 v.first
-                               end
+                r = case v.class.to_s
+                    when "String", "Symbol"
+                      v
+                    when "Array"
+                      v.first
+                    end
+                self[:roles] = available_roles.include?(r) ? r : :user 
               end
             end
 
             def roles
               case self[:roles].class.to_s
               when "String", "Symbol"
-                [self[:roles].to_sym, :user]
+                [self[:roles].to_sym, :user].uniq
               when "Array"
                 super
               else
