@@ -99,7 +99,7 @@ module Petergate
       end
 
       def logged_in?(*roles)
-        current_user && (roles & current_user.roles).any?
+        current_user && current_user.has_roles?(*roles)
       end
 
       def custom_message

@@ -67,6 +67,12 @@ module Petergate
             def role
               roles.first
             end
+
+            def has_roles?(*roles)
+              (roles & self.roles).any?
+            end
+
+            alias_method :has_role?, :has_roles?
           end
         end
       end
