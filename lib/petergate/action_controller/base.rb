@@ -41,6 +41,12 @@ module Petergate
               subclass.instance_variable_set("@_controller_rules", instance_variable_get("@_controller_rules"))
               subclass.instance_variable_set("@_controller_message", instance_variable_get("@_controller_message"))
             end
+          end
+
+          class_eval do
+            def check_access
+              permissions(self.class.controller_rules)
+            end
 
             before_action do 
               unless logged_in?(:root_admin)
@@ -53,12 +59,6 @@ module Petergate
                   end
                 end
               end
-            end
-          end
-
-          class_eval do
-            def check_access
-              permissions(self.class.controller_rules)
             end
           end
         end
