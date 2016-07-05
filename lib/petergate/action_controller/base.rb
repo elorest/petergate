@@ -43,20 +43,14 @@ module Petergate
             end
           end
 
-          class_eval do
-            def check_access
-              permissions(self.class.controller_rules)
-            end
-
-            before_action do 
-              unless logged_in?(:root_admin)
-                message= defined?(check_access) ? check_access : true
-                if message == false || message.is_a?(String)
-                  if current_user || @user
-                    forbidden! message
-                  else
-                    unauthorized!
-                  end
+          before_action do 
+            unless logged_in?(:root_admin)
+              message = permissions(self.class.controller_rules)
+              if message == false || message.is_a?(String)
+                if current_user || @user
+                  forbidden! message
+                else
+                  unauthorized!
                 end
               end
             end
@@ -68,7 +62,7 @@ module Petergate
 
       def self.included(base)
         base.extend(ClassMethods)
-        base.helper_method :logged_in?, :forbidden!
+        base.helper_method :logged_in?, :forbidden!, :unauthorized!
       end
 
       def parse_permission_rules(rules)
@@ -78,11 +72,11 @@ module Petergate
                              v == :all ? self.class.all_actions : raise("No action for: #{v}")
                            when "Hash"
                              v[:except].present? ? self.class.except_actions(v[:except]) : raise("Invalid values for except: #{v.values}")
-                             when "Array"
-                               v
-                             else
-                               raise("No action for: #{v}")
-                             end
+                           when "Array"
+                             v
+                           else
+                             raise("No action for: #{v}")
+                           end
 
           h.merge({k => special_values})
         end
