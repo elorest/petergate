@@ -41,6 +41,19 @@ module Petergate
               subclass.instance_variable_set("@_controller_rules", instance_variable_get("@_controller_rules"))
               subclass.instance_variable_set("@_controller_message", instance_variable_get("@_controller_message"))
             end
+
+            before_action do 
+              unless logged_in?(:root_admin)
+                message= defined?(check_access) ? check_access : true
+                if message == false || message.is_a?(String)
+                  if current_user || @user
+                    forbidden! message
+                  else
+                    unauthorized!
+                  end
+                end
+              end
+            end
           end
 
           class_eval do
@@ -56,18 +69,6 @@ module Petergate
       def self.included(base)
         base.extend(ClassMethods)
         base.helper_method :logged_in?, :forbidden!
-        base.before_action do 
-          unless logged_in?(:root_admin)
-            message= defined?(check_access) ? check_access : true
-            if message == false || message.is_a?(String)
-              if current_user || @user
-                forbidden! message
-              else
-                unauthorized!
-              end
-            end
-          end
-        end
       end
 
       def parse_permission_rules(rules)
