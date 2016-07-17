@@ -62,12 +62,13 @@ petergate(roles: [:admin, :editor], multiple: false)                            
 
 ##### Instance Methods
 
-`user.role => :editor`
-`user.roles => [:editor, :user]`
-`user.roles=(v) #sets roles`
-`user.available_roles => [:admin, :editor]`
-`user.has_roles?(:admin, :editors) # returns true if user is any of roles passed in as params.`
-
+```ruby
+user.role => :editor
+user.roles => [:editor, :user]
+user.roles=(v) #sets roles
+user.available_roles => [:admin, :editor]
+user.has_roles?(:admin, :editors) # returns true if user is any of roles passed in as params.
+```
 ##### Class Methods
 
 `User.role_editors => #list of editors`
