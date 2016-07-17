@@ -71,7 +71,7 @@ user.has_roles?(:admin, :editors) # returns true if user is any of roles passed 
 ```
 ##### Class Methods
 
-`User.role_editors => #list of editors`
+`User.role_editors => #list of editors. Method is created for all roles. role_admins, role_teachers, etc.`
 
 ####Controllers
  
