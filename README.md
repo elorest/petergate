@@ -46,7 +46,7 @@ This will add a migration and insert petergate into your User model.
     
 Usage
 ------
-#####User Model
+####User Model
 
 Configure available roles by modifying this block at the top of your user.rb.
 
@@ -60,9 +60,20 @@ petergate(roles: [:admin, :editor], multiple: false)                            
 ############################################################################################ 
 ```
 
-Instance methods added to your User model include: `role, roles, roles=, available_roles`
+##### Instance Methods
 
-#####Controllers
+```ruby
+user.role => :editor
+user.roles => [:editor, :user]
+user.roles=(v) #sets roles
+user.available_roles => [:admin, :editor]
+user.has_roles?(:admin, :editors) # returns true if user is any of roles passed in as params.
+```
+##### Class Methods
+
+`User.role_editors => #list of editors. Method is created for all roles. role_admins, role_teachers, etc.`
+
+####Controllers
  
 Setup permissions in your controllers the same as you would for a before filter like so:
 
