@@ -48,7 +48,7 @@ module Petergate
                       v
                     when "Array"
                       v.first
-                    end
+                    end.to_sym
                 self[:roles] = available_roles.include?(r) ? r : :user 
               end
             end
