@@ -24,6 +24,7 @@ And then execute:
 Or install it yourself as:
 
     gem install petergate
+
 #####Prerequisites: Setup Authentication (Devise)
 
 Make sure your user model is defined in
@@ -71,7 +72,7 @@ user.has_roles?(:admin, :editors) # returns true if user is any of roles passed 
 ```
 ##### Class Methods
 
-`User.role_editors => #list of editors. Method is created for all roles. role_admins, role_teachers, etc.`
+`User.#{role}_editors => #list of editors. Method is created for all roles. Roles [admin, :teacher] will have corresponding methods role_admins, role_teachers, etc.`
 
 ####Controllers
  
