@@ -42,9 +42,9 @@ If you're using [devise](https://github.com/plataformatec/devise) you're in luck
 
     rails g petergate:install
     rake db:migrate
-    
-This will add a migration and insert petergate into your User model. 
-    
+
+This will add a migration and insert petergate into your User model.
+
 Usage
 ------
 ####User Model
@@ -58,7 +58,7 @@ Configure available roles by modifying this block at the top of your user.rb.
 ## The :root_admin can access any page regardless of access settings. Use with caution!   ##
 ## The multiple option can be set to true if you need users to have multiple roles.       ##
 petergate(roles: [:admin, :editor], multiple: false)                                      ##
-############################################################################################ 
+############################################################################################
 ```
 
 ##### Instance Methods
@@ -75,7 +75,7 @@ user.has_roles?(:admin, :editors) # returns true if user is any of roles passed 
 `User.#{role}_editors => #list of editors. Method is created for all roles. Roles [admin, :teacher] will have corresponding methods role_admins, role_teachers, etc.`
 
 ####Controllers
- 
+
 Setup permissions in your controllers the same as you would for a before filter like so:
 
 ```ruby
@@ -104,7 +104,15 @@ def roles=(v)
   self[:roles] = v.map(&:to_sym).to_a.select{|r| r.size > 0 && ROLES.include?(r)}
 end
 ```
+If you need to deny access you can use the forbidden! method:
 
+```ruby
+before_action :check_active_user
+
+def check_active_user
+  forbidden! unless current_user.active
+end
+```
 If you want to change the `permission denied` message you can add to the access line:
 
 ```ruby
