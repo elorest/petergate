@@ -12,7 +12,7 @@
 
 Installation
 ------
-#####Get the gem
+##### Get the gem
 Add this line to your application's Gemfile:
 
     gem 'petergate'
