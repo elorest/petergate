@@ -124,7 +124,7 @@ Credits
 
 PeterGate is written and maintaned by Isaac Sloan and friends.
 
-Currently funded and maintained by [RingSeven](http://ringseven.com)
+Currently funded and maintained by [Nikola Motor Company](https://nikolamotor.com)
 
 
 ## Contributing
