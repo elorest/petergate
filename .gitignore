@@ -15,3 +15,4 @@ dummy/tmp/*
 *.a
 mkmf.log
 *.gem
+.DS_Store
