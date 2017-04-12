@@ -12,7 +12,7 @@
 
 Installation
 ------
-#####Get the gem
+##### Get the gem
 Add this line to your application's Gemfile:
 
     gem 'petergate'
@@ -25,7 +25,7 @@ Or install it yourself as:
 
     gem install petergate
 
-#####Prerequisites: Setup Authentication (Devise)
+##### Prerequisites: Setup Authentication (Devise)
 
 Make sure your user model is defined in
     app/models/user.rb
@@ -38,7 +38,7 @@ If you're using [devise](https://github.com/plataformatec/devise) you're in luck
     after_sign_in_path_for(current_user)
     authenticate_user!
 
-#####Run the generators
+##### Run the generators
 
     rails g petergate:install
     rake db:migrate
@@ -47,7 +47,7 @@ This will add a migration and insert petergate into your User model.
 
 Usage
 ------
-####User Model
+#### User Model
 
 Configure available roles by modifying this block at the top of your user.rb.
 
@@ -74,7 +74,7 @@ user.has_roles?(:admin, :editors) # returns true if user is any of roles passed 
 
 `User.#{role}_editors => #list of editors. Method is created for all roles. Roles [admin, :teacher] will have corresponding methods role_admins, role_teachers, etc.`
 
-####Controllers
+#### Controllers
 
 Setup permissions in your controllers the same as you would for a before filter like so:
 
