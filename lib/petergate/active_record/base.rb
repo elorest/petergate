@@ -64,6 +64,8 @@ module Petergate
               end
             end
 
+            alias_method :role=, :roles=
+
             def role
               roles.first
             end
