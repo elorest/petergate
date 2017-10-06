@@ -119,6 +119,59 @@ If you want to change the `permission denied` message you can add to the access 
 access user: [:show, :index], message: "You shall not pass"
 ```
 
+#### User Admin Example Form for Multiple Roles
+
+```slim
+= form_for @user do |f| 
+  - if @user.errors.any? 
+    #error_explanation 
+      h2 = "#{pluralize(@user.errors.count, "error")} prohibited this user from being saved:" 
+      ul 
+        - @user.errors.full_messages.each do |message| 
+          li = message 
+ 
+  .field 
+    = f.label :email 
+    = f.text_field :email 
+  - if @user.new_record? || params[:passwd] 
+    .field 
+      = f.label :password 
+      = f.text_field :password 
+    .field 
+      = f.label :password_confirmation 
+      = f.text_field :password_confirmation 
+  .field 
+    = f.label :roles 
+    = f.select :roles, @user.available_roles, {}, {multiple: true} 
+  .actions = f.submit 
+```
+
+#### User Admin Example Form for Single Role Mode
+
+```slim
+= form_for @user do |f| 
+  - if @user.errors.any? 
+    #error_explanation 
+      h2 = "#{pluralize(@user.errors.count, "error")} prohibited this user from being saved:" 
+      ul 
+        - @user.errors.full_messages.each do |message| 
+          li = message 
+ 
+  .field 
+    = f.label :email 
+    = f.text_field :email 
+  - if @user.new_record? || params[:passwd] 
+    .field 
+      = f.label :password 
+      = f.text_field :password 
+    .field 
+      = f.label :password_confirmation 
+      = f.text_field :password_confirmation 
+  .field 
+    = f.label :role 
+    = f.select :role, @user.available_roles
+  .actions = f.submit 
+```
 Credits
 -------
 
