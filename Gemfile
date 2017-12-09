@@ -4,7 +4,8 @@ ruby '2.3.1'
 # Specify your gem's dependencies in petergate.gemspec
 gemspec
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
-gem 'rails', '4.1.9'
+gem 'rails', '~> 4.2.7.1'
+
 # Use sqlite3 as the database for Active Record
 gem 'sqlite3'
 # Use SCSS for stylesheets
@@ -28,7 +29,6 @@ gem 'jbuilder', '~> 2.0'
 gem 'sdoc', '~> 0.4.0',          group: :doc
 
 # Spring speeds up development by keeping your application running in the background. Read more: https://github.com/rails/spring
-gem 'spring',        group: :development
 gem 'devise'
 
 # Use ActiveModel has_secure_password
