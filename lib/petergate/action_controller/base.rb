@@ -103,7 +103,7 @@ module Petergate
 
       def unauthorized!
         respond_to do |format|
-          format.any(:js, :json, :xml) { render nothing: true, status: :unauthorized }
+          format.any(:js, :json, :xml) { head :unauthorized }
           format.html do
             authenticate_user! 
           end
