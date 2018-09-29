@@ -89,12 +89,16 @@ module Petergate
         allowances = [rules[:all]]
         current_user.roles.each do |role|
           allowances << rules[role]
-        end if logged_in?(:user)
+        end if user_logged_in? 
         allowances.flatten.compact.include?(action_name.to_sym)
       end
 
       def logged_in?(*roles)
         current_user && current_user.has_roles?(*roles)
+      end
+
+      def user_logged_in?
+        !!current_user
       end
 
       def custom_message
