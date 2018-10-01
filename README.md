@@ -33,7 +33,6 @@ and called User.
 
 If you're using [devise](https://github.com/plataformatec/devise) you're in luck, otherwise you'll have to add following methods to your project:
 
-    user_signed_in?
     current_user
     after_sign_in_path_for(current_user)
     authenticate_user!
