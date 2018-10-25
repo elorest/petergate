@@ -1,5 +1,5 @@
 language: ruby
 rvm:
-  - "2.5.1"
+  - "2.3.1"
 before_script: "bundle install && cd dummy && rake db:create && rake db:migrate"
 script: "bundle exec rake test"
