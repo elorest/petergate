@@ -107,16 +107,20 @@ module Petergate
 
       def unauthorized!
         respond_to do |format|
-          format.any(:js, :json, :xml) { render nothing: true, status: :unauthorized }
+          format.any(:js, :json, :xml) do 
+            head(:unauthorized)
+          end
           format.html do
-            authenticate_user! 
+            return authenticate_user! 
           end
         end
       end
 
       def forbidden!(msg = nil)
         respond_to do |format|
-          format.any(:js, :json, :xml) { render nothing: true, status: :forbidden }
+          format.any(:js, :json, :xml) do 
+            head(:forbidden)
+          end
           format.html do
             destination = current_user.present? ? request.referrer || after_sign_in_path_for(current_user) : root_path
             redirect_to destination, notice: (msg || custom_message)
