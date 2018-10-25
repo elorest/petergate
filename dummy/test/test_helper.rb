@@ -19,7 +19,7 @@ class ActiveSupport::TestCase
 end
 
 class ActionController::TestCase
-  include Devise::TestHelpers
+  include Devise::Test::ControllerHelpers
   def create_user_and_login(email: "user@example.com", password: "youllneverguess")
     u = User.create(email: email, password: password, password_confirmation: password, roles: :user)
     sign_in(u) 
