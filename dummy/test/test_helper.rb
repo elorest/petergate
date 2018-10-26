@@ -18,20 +18,20 @@ class ActiveSupport::TestCase
   # Setup all fixtures in test/fixtures/*.(yml|csv) for all tests in alphabetical order.
 end
 
-class ActionController::TestCase
-  include Devise::Test::ControllerHelpers
+class ActionDispatch::IntegrationTest
+  include Devise::Test::IntegrationHelpers
   def create_user_and_login(email: "user@example.com", password: "youllneverguess")
-    u = User.create(email: email, password: password, password_confirmation: password, roles: :user)
+    u = User.create!(email: email, password: password, password_confirmation: password, roles: :user)
     sign_in(u) 
   end
 
   def create_admin_and_login(email: "user@example.com", password: "youllneverguess")
-    u = User.create(email: email, password: password, password_confirmation: password, roles: :root_admin)
+    u = User.create!(email: email, password: password, password_confirmation: password, roles: :root_admin)
     sign_in(u) 
   end
 
   def create_company_admin_and_login(email: "user@example.com", password: "youllneverguess")
-    u = User.create(email: email, password: password, password_confirmation: password, roles: :company_admin)
+    u = User.create!(email: email, password: password, password_confirmation: password, roles: :company_admin)
     sign_in(u) 
   end
 end

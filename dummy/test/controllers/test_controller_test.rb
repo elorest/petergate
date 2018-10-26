@@ -1,44 +1,46 @@
 require "test_helper"
 
 class TestController < ApplicationController
-  skip_before_filter :verify_authenticity_token
+  skip_before_action :verify_authenticity_token
 
   def index
     forbidden! params[:msg]
   end
 end
 
-describe "TestController", '#forbidden!' do
+describe TestController, '#forbidden!' do
   let(:admin) { users(:admin) }
-  before { sign_in admin }
+  before do 
+    User.petergate(roles: [:root_admin, :company_admin], multiple: true)
+    create_user_and_login 
+  end
   
   describe 'with html format request' do
     it 'redirect to referrer' do
-      @request.env['HTTP_REFERER'] = 'http://referrer-page.com'
-      get :index
+      get edit_blog_path(Blog.first), headers: {'Referrer': 'http://referrer-page.com'}
       assert_redirected_to 'http://referrer-page.com'
     end
 
     it 'redirect to after_sign_in_path_for' do
-      get :index
-      assert_redirected_to root_path
+      get new_user_session_path
+      assert_redirected_to root_path 
     end
 
-    it 'redirect to root_path if not signed in' do
+    it 'redirect to sign_in if not signed in' do
       sign_out admin
-      get :index
-      assert_redirected_to root_url
+      get blog_path(Blog.first)
+      assert_redirected_to new_user_session_path
     end
 
     it 'uses the msg when supplied' do
-      get :index, msg: 'custom message'
+      get edit_blog_path(Blog.first), headers: { msg: 'custom message' }
       assert_equal('custom message', flash[:notice])
     end
   end
 
   describe 'with xhr format request' do
     it 'respond with forbidden status' do
-      get :index, format: :js
+      get edit_blog_path(Blog.first), headers: { 'Accept': Mime::Type.lookup_by_extension(:js).to_s, 'Content-Type': Mime::Type.lookup_by_extension(:js).to_s }
       assert_response :forbidden
     end
   end
