@@ -40,7 +40,7 @@ describe TestController, '#forbidden!' do
 
   describe 'with xhr format request' do
     it 'respond with forbidden status' do
-      get edit_blog_path(Blog.first), headers: { 'Accept': Mime::Type.lookup_by_extension(:js).to_s, 'Content-Type': Mime::Type.lookup_by_extension(:js).to_s }
+      get edit_blog_path(Blog.first), headers: { 'Accept': Mime[:js].to_s, 'Content-Type': Mime[:js].to_s }
       assert_response :forbidden
     end
   end
