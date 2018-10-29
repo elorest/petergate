@@ -79,7 +79,7 @@ describe BlogsController do
 
     it "gets forbidden and no redirect with json format on new" do
       assert_webservice_is_forbiddden do |format|
-        get new_blog_path, headers: { 'Accept': Mime::Type.lookup_by_extension(format).to_s, 'Content-Type': Mime::Type.lookup_by_extension(format).to_s }
+        get new_blog_path, headers: { 'Accept': Mime[format].to_s, 'Content-Type': Mime[format].to_s }
       end
     end
 
@@ -89,7 +89,7 @@ describe BlogsController do
         assert_redirected_to root_path
 
         assert_webservice_is_forbiddden do |format|
-          post blogs_path, params: { blog: { 'content': blog.content, 'title': blog.title } }.to_json, headers: { 'Accept': Mime::Type.lookup_by_extension(format).to_s, 'Content-Type': Mime::Type.lookup_by_extension(format).to_s}
+          post blogs_path, params: { blog: { 'content': blog.content, 'title': blog.title } }.to_json, headers: { 'Accept': Mime[format].to_s, 'Content-Type': Mime[format].to_s}
         end
       end
     end
@@ -109,7 +109,7 @@ describe BlogsController do
       assert_redirected_to root_path 
 
       assert_webservice_is_forbiddden do |format|
-        put blog_path(blog), params: {blog: { content: blog.content, title: blog.title }}.to_json , headers: { 'Accept': Mime::Type.lookup_by_extension(format).to_s, 'Content-Type': Mime::Type.lookup_by_extension(format).to_s }
+        put blog_path(blog), params: {blog: { content: blog.content, title: blog.title }}.to_json , headers: { 'Accept': Mime[format].to_s, 'Content-Type': Mime[format].to_s }
       end
     end
 
@@ -119,7 +119,7 @@ describe BlogsController do
         assert_redirected_to root_path
       end
       assert_webservice_is_forbiddden do |format|
-        delete blog_path(blog), headers: { 'Accept': Mime::Type.lookup_by_extension(format).to_s, 'Content-Type': Mime::Type.lookup_by_extension(format).to_s }
+        delete blog_path(blog), headers: { 'Accept': Mime[format].to_s, 'Content-Type': Mime[format].to_s }
       end
     end
   end
@@ -143,7 +143,7 @@ describe BlogsController do
 
     it "json gets permission denied on new" do
       assert_webservice_is_unauthorized do |format|
-        get new_blog_path, headers: {'Accept': Mime::Type.lookup_by_extension(format).to_s, 'Content-Type': Mime::Type.lookup_by_extension(format).to_s}
+        get new_blog_path, headers: {'Accept': Mime[format].to_s, 'Content-Type': Mime[format].to_s}
       end
     end
 
