@@ -122,8 +122,8 @@ module Petergate
             head(:forbidden)
           end
           format.html do
-            destination = current_user.present? ? request.referrer || after_sign_in_path_for(current_user) : root_path
-            redirect_to destination, notice: (msg || custom_message)
+            destination = current_user.present? ? request.headers['Referrer'] || after_sign_in_path_for(current_user) : root_path
+            redirect_to destination, notice: (msg || request.headers['msg'] || custom_message)
           end
         end
       end
