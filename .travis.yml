@@ -4,14 +4,6 @@ rvm:
   - "2.5.1"
 
 script:
-  - "cd test/user"
-  - "bundle install"
-  - "rake db:create"
-  - "rake db:migrate"
-  - "bundle exec rake test"
+  - "cd test/user && bundle install && rake db:create && rake db:migrate && bundle exec rake test"
   - "cd .."
-  - "cd employee"
-  - "bundle install"
-  - "rake db:create"
-  - "rake db:migrate"
-  - "bundle exec rake test"
+  - "cd employee && bundle install && rake db:create && rake db:migrate && bundle exec rake test"
