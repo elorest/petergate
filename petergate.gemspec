@@ -19,6 +19,6 @@ Gem::Specification.new do |spec|
   spec.post_install_message = "NOTICE: As of version 1.5.0, the :admin role has been changed to :root_admin."
 
   spec.add_development_dependency "bundler", "~> 1.7"
-  spec.add_development_dependency "rake", "~> 10.0"
+  spec.add_development_dependency "rake", "~> 12.3"
   spec.add_dependency 'activerecord', "> 4.0.0"
 end

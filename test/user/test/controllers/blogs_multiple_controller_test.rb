@@ -12,42 +12,42 @@ describe BlogsController do
     let(:blog) { blogs :one }
 
     it "gets index" do
-      get blogs_url
+      get root_path
       assert_response :success
-      assert_not_equal 0, Blog.count
+      assert_not_nil :blog
     end
 
     it "gets new" do
-      get new_blog_url
+      get new_blog_path
       assert_response :success
     end
 
     it "creates blog" do
       assert_difference('Blog.count') do
-        post blogs_url, params: { blog: { content: blog.content, title: blog.title } }
+        post blogs_path, params: { blog: { content: blog.content, title: blog.title } }
       end
 
       assert_redirected_to blog_path(Blog.last)
     end
 
     it "shows blog" do
-      get blog_url blog
+      get blog_path(blog)
       assert_response :success
     end
 
     it "gets edit" do
-      get edit_blog_url blog
+      get edit_blog_path(blog)
       assert_response :success
     end
 
     it "updates blog" do
-      put blog_url blog, params: { blog: { content: blog.content, title: blog.title } }
+      put blog_path(blog), params: { blog: { content: blog.content, title: blog.title } }
       assert_redirected_to blog_path(blog)
     end
 
     it "destroys blog" do
       assert_difference('Blog.count', -1) do
-        delete blog_url blog
+        delete blog_path(blog)
       end
 
       assert_redirected_to blogs_path
@@ -66,62 +66,60 @@ describe BlogsController do
     let(:blog) { blogs :one }
 
     it "plain user can see index" do
-      get blogs_url
+      get root_path
       assert_response :success
-      assert_not_equal 0, Blog.count
+      assert_not_nil blog
     end
 
     it "gets permission denied on new" do
-      get new_blog_url
+      get new_blog_path
       assert_response 302
       flash[:notice].must_equal "Permission Denied"
     end
 
     it "gets forbidden and no redirect with json format on new" do
       assert_webservice_is_forbiddden do |format|
-        get new_blog_url(format: format)
+        get new_blog_path, headers: { 'Accept': Mime[format].to_s, 'Content-Type': Mime[format].to_s }
       end
     end
 
     it "doesn't allow plain user to create blog post" do
       assert_no_difference('Blog.count') do
-        post blogs_url, params: { blog: { content: blog.content, title: blog.title } }
+        post blogs_path, params: { blog: { content: blog.content, title: blog.title } }
         assert_redirected_to root_path
 
         assert_webservice_is_forbiddden do |format|
-          post blogs_url(format: format), params: { blog: { content: blog.content, title: blog.title } }
+          post blogs_path, params: { blog: { 'content': blog.content, 'title': blog.title } }.to_json, headers: { 'Accept': Mime[format].to_s, 'Content-Type': Mime[format].to_s}
         end
       end
     end
 
     it "can see show blog" do
-      get blog_url blog
+      get blog_path(blog)
       assert_response :success
     end
 
     it "can't get to edit page" do
-      get edit_blog_url blog
+      get edit_blog_path(blog)
       assert_response 302
     end
 
     it "can't update blog" do
-      put blog_url blog, params: { blog: { content: blog.content, title: blog.title } }
+      put blog_path(blog), params: { blog: { content: blog.content, title: blog.title } }
       assert_redirected_to root_path 
 
       assert_webservice_is_forbiddden do |format|
-        put blog_url(blog, format: format), params: { blog: { content: blog.content, title: blog.title } }
+        put blog_path(blog), params: {blog: { content: blog.content, title: blog.title }}.to_json , headers: { 'Accept': Mime[format].to_s, 'Content-Type': Mime[format].to_s }
       end
     end
 
     it "can't destroy blog" do
       assert_no_difference('Blog.count') do
-        delete blog_url blog
+        delete blog_path(blog)
         assert_redirected_to root_path
-
-        assert_webservice_is_forbiddden do |format|
-          delete blog_url blog
-          delete blog_url(blog, format: format)
-        end
+      end
+      assert_webservice_is_forbiddden do |format|
+        delete blog_path(blog), headers: { 'Accept': Mime[format].to_s, 'Content-Type': Mime[format].to_s }
       end
     end
   end
@@ -133,47 +131,47 @@ describe BlogsController do
     let(:blog) { blogs :one }
 
     it "guest can see index" do
-      get blogs_url
+      get root_path
       assert_response :success
-      assert_not_equal 0, Blog.count
+      assert_not_nil blog
     end
 
     it "gets permission denied on new" do
-      get new_blog_url
-      assert_response 302
+      get new_blog_path
+      assert_redirected_to "/users/sign_in"
     end
 
     it "json gets permission denied on new" do
       assert_webservice_is_unauthorized do |format|
-        get new_blog_url(format: format)
+        get new_blog_path, headers: {'Accept': Mime[format].to_s, 'Content-Type': Mime[format].to_s}
       end
     end
 
     it "doesn't allow plain user to create blog post" do
       assert_no_difference('Blog.count') do
-        post blogs_url, params: { blog: { content: blog.content, title: blog.title } }
+        post blogs_path, params: { blog: { content: blog.content, title: blog.title } }
         assert_redirected_to "/users/sign_in"
       end
     end
 
     it "doesn't show blog" do
-      get blog_url blog
+      get blog_path(blog)
       assert_response 302
     end
 
     it "can't get to edit page" do
-      get edit_blog_url blog
+      get edit_blog_path(blog)
       assert_response 302
     end
 
     it "can't update blog" do
-      put blog_url blog, params: { blog: { content: blog.content, title: blog.title } }
+      put blog_path(blog), params: { blog: { content: blog.content, title: blog.title } }
       assert_redirected_to "/users/sign_in"
     end
 
     it "can't destroy blog" do
       assert_no_difference('Blog.count') do
-        delete blog_url blog
+        delete blog_path(blog)
         assert_redirected_to "/users/sign_in"
       end
     end
@@ -191,42 +189,42 @@ describe BlogsController do
     let(:blog) { blogs :one }
 
     it "gets index" do
-      get blogs_url
+      get root_path
       assert_response :success
-      assert_not_equal 0, Blog.count
+      assert_not_nil :blogs
     end
 
     it "gets new" do
-      get new_blog_url
+      get new_blog_path
       assert_response :success
     end
 
     it "creates blog" do
       assert_difference('Blog.count') do
-        post blogs_url, params: { blog: { content: blog.content, title: blog.title } }
+        post blogs_path, params: { blog: { content: blog.content, title: blog.title } }
       end
 
       assert_redirected_to blog_path(Blog.last)
     end
 
     it "shows blog" do
-      get blog_url blog
+      get blog_path(blog)
       assert_response :success
     end
 
     it "gets edit" do
-      get edit_blog_url blog
+      get edit_blog_path(blog)
       assert_response :success
     end
 
     it "updates blog" do
-      put blog_url blog, params: { blog: { content: blog.content, title: blog.title } }
+      put blog_path(blog), params: { blog: { content: blog.content, title: blog.title } }
       assert_redirected_to blog_path(blog)
     end
 
     it "can't destroy blog" do
       assert_no_difference('Blog.count', -1) do
-        delete blog_url blog
+        delete blog_path(id: blog)
       end
 
       assert_redirected_to root_path

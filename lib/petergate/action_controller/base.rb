@@ -107,19 +107,23 @@ module Petergate
 
       def unauthorized!
         respond_to do |format|
-          format.any(:js, :json, :xml) { render nothing: true, status: :unauthorized }
+          format.any(:js, :json, :xml) do 
+            head(:unauthorized)
+          end
           format.html do
-            self.send("authenticate_" + Petergate.auth_class + "!")
+            return self.send("authenticate_" + Petergate.auth_class + "!")
           end
         end
       end
 
       def forbidden!(msg = nil)
         respond_to do |format|
-          format.any(:js, :json, :xml) { render nothing: true, status: :forbidden }
+          format.any(:js, :json, :xml) do 
+            head(:forbidden)
+          end
           format.html do
-            destination = current_auth_model.present? ? request.referrer || after_sign_in_path_for(current_auth_model) : root_path
-            redirect_to destination, notice: (msg || custom_message)
+            destination = current_auth_model.present? ? request.headers['Referrer'] || after_sign_in_path_for(current_auth_model) : root_path
+            redirect_to destination, notice: (msg || request.headers['msg'] || custom_message)
           end
         end
       end
