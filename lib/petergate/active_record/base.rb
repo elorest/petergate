@@ -7,7 +7,7 @@ module Petergate
 
       module ClassMethods
         def petergate(roles: [:admin], multiple: true)
-          Petergate.auth_class = self.to_s
+          Petergate.auth_class = self.to_s.downcase
 
           if multiple
             serialize :roles
