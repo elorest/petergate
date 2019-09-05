@@ -5,8 +5,10 @@ rvm:
 
 before_script:
   - "cd test/user && bundle install && rails db:create db:migrate"
+  - "cd ../.."
   - "cd test/employee && bundle install && rails db:create db:migrate"
 
 script:
   - "cd test/user && bundle exec rails test"
+  - "cd ../.."
   - "cd test/employee && bundle exec rails test"
