@@ -47,7 +47,7 @@ module Petergate
             unless logged_in?(:root_admin)
               message = permissions(self.class.controller_rules)
               if message == false || message.is_a?(String)
-                if get_current_auth_model || instance_variable_get("@" + Petergate.auth_class)
+                if current_auth_model || instance_variable_get("@" + Petergate.auth_class)
                   forbidden! message
                 else
                   unauthorized!
@@ -87,18 +87,18 @@ module Petergate
       def permissions(rules = {all: [:index, :show], customer: [], wiring: []})
         rules = parse_permission_rules(rules)
         allowances = [rules[:all]]
-        get_current_auth_model.roles.each do |role|
+        current_auth_model.roles.each do |role|
           allowances << rules[role]
         end if user_logged_in? 
         allowances.flatten.compact.include?(action_name.to_sym)
       end
 
       def logged_in?(*roles)
-        get_current_auth_model && get_current_auth_model.has_roles?(*roles)
+        current_auth_model && current_auth_model.has_roles?(*roles)
       end
 
       def user_logged_in?
-        !!get_current_auth_model
+        !!current_auth_model
       end
 
       def custom_message
@@ -118,13 +118,13 @@ module Petergate
         respond_to do |format|
           format.any(:js, :json, :xml) { render nothing: true, status: :forbidden }
           format.html do
-            destination = get_current_auth_model.present? ? request.referrer || after_sign_in_path_for(get_current_auth_model) : root_path
+            destination = current_auth_model.present? ? request.referrer || after_sign_in_path_for(current_auth_model) : root_path
             redirect_to destination, notice: (msg || custom_message)
           end
         end
       end
 
-      def get_current_auth_model
+      def current_auth_model
         self.send("current_" + Petergate.auth_class)
       end
     end
