@@ -109,7 +109,7 @@ module Petergate
         respond_to do |format|
           format.any(:js, :json, :xml) { render nothing: true, status: :unauthorized }
           format.html do
-            authenticate_user! 
+            self.send("authenticate_" + Petergate.auth_class + "!")
           end
         end
       end

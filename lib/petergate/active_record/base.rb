@@ -21,7 +21,7 @@ module Petergate
           end
 
           instance_eval do
-            const_set('ROLES', (roles + [:user]).uniq.map(&:to_sym)) unless defined?(User::ROLES)
+            const_set('ROLES', (roles + [:user]).uniq.map(&:to_sym)) unless self.constants.include?(:ROLES)
 
             if multiple
               roles.each do |role|
