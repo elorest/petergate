@@ -1,4 +1,5 @@
 require "test_helper"
+
 describe BlogsController do
   ################################################################################
   # ADMIN ROLE
