@@ -3,12 +3,15 @@ language: ruby
 rvm:
   - "2.5.1"
 
-before_script:
-  - "cd test/user && bundle install && rails db:create db:migrate"
-  - "cd ../.."
-  - "cd test/employee && bundle install && rails db:create db:migrate"
-
 script:
-  - "cd test/user && bundle exec rails test"
-  - "cd ../.."
-  - "cd test/employee && bundle exec rails test"
+  - "cd test/user"
+  - "bundle install"
+  - "rake db:create"
+  - "rake db:migrate"
+  - "bundle exec rake test"
+  - "cd .."
+  - "cd employee"
+  - "bundle install"
+  - "rake db:create"
+  - "rake db:migrate"
+  - "bundle exec rake test"
