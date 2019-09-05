@@ -4,8 +4,8 @@ rvm:
   - "2.5.1"
 
 before_script:
-  - "cd test/user && rails db:create db:migrate"
-  - "cd test/employee && rails db:create db:migrate"
+  - "cd test/user && bundle install && rails db:create db:migrate"
+  - "cd test/employee && bundle install && rails db:create db:migrate"
 
 script:
   - "cd test/user && bundle exec rails test"
