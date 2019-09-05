@@ -1,7 +1,7 @@
 Rails.application.routes.draw do
   devise_for :users
   resources :blogs
-  get 'test_forbidden' => 'test#index'
+  get 'test_forbidden', to: 'test#index', as: 'test'
 
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".
