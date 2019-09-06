@@ -7,6 +7,8 @@ module Petergate
 
       module ClassMethods
         def petergate(roles: [:admin], multiple: true)
+          Petergate.auth_class = self.to_s.downcase
+
           if multiple
             serialize :roles
             after_initialize do
@@ -19,7 +21,7 @@ module Petergate
           end
 
           instance_eval do
-            const_set('ROLES', (roles + [:user]).uniq.map(&:to_sym)) unless defined?(User::ROLES)
+            const_set('ROLES', (roles + [:user]).uniq.map(&:to_sym)) unless self.constants.include?(:ROLES)
 
             if multiple
               roles.each do |role|
