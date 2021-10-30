@@ -81,7 +81,7 @@ module Petergate
 
           h.merge({k => special_values})
         end
-        # Allows Array's of keys for he same hash.
+        # Allows Array's of keys for the same hash.
         rules = rules.inject({}){|h, (k, v)| k.class == Array ? h.merge(Hash[k.map{|kk| [kk, v]}]) : h.merge(k => v) }
       end
 
