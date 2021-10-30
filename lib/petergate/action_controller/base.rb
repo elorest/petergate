@@ -38,6 +38,7 @@ module Petergate
             end
 
             def inherited(subclass)
+              super
               subclass.instance_variable_set("@_controller_rules", instance_variable_get("@_controller_rules"))
               subclass.instance_variable_set("@_controller_message", instance_variable_get("@_controller_message"))
             end
