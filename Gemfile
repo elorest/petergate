@@ -1,5 +1,5 @@
 source 'https://rubygems.org'
-ruby '3.0.1'
+ruby '3.2.0'
 
 # Specify your gem's dependencies in petergate.gemspec
 gemspec
