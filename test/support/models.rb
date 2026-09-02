@@ -23,11 +23,6 @@ class TwiceConfigured < ActiveRecord::Base
   petergate(roles: [:second_role], multiple: false)
 end
 
-# A subclass inherits its parent's roles...
+# A subclass shares its parent's roles.
 class InheritedRoles < MultiRoleUser
-end
-
-# ...unless it configures its own.
-class OwnRoles < MultiRoleUser
-  petergate(roles: [:auditor], multiple: true)
 end

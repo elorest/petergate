@@ -19,7 +19,16 @@ module Petergate
           end
 
           instance_eval do
-            const_set('ROLES', (roles + [:user]).uniq.map(&:to_sym)) unless const_defined?(:ROLES, false)
+            # Skip when this model, or a model it inherits from, already has
+            # ROLES. A subclass shares its parent's roles: configuring one user
+            # model to inherit from another and carry a different set of roles
+            # is not supported. Object's ancestry is excluded so an unrelated
+            # top-level ROLES constant cannot suppress the assignment.
+            already_configured = (ancestors - Object.ancestors).any? do |mod|
+              mod.const_defined?(:ROLES, false)
+            end
+
+            const_set('ROLES', (roles + [:user]).uniq.map(&:to_sym)) unless already_configured
 
             if multiple
               roles.each do |role|

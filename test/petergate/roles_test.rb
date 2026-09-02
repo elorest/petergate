@@ -207,13 +207,17 @@ class RolesTest < ActiveSupport::TestCase
     assert_equal MultiRoleUser::ROLES, InheritedRoles.new.available_roles
   end
 
-  def test_a_subclass_may_declare_its_own_roles
-    assert_equal [:auditor, :user], OwnRoles::ROLES
-    refute_equal MultiRoleUser::ROLES, OwnRoles::ROLES
-  end
+  def test_a_subclass_shares_its_parents_roles_even_if_it_reconfigures
+    # Having one user model inherit from another and carry a different set of
+    # roles is not supported, so a second petergate call on a subclass leaves
+    # the parent's roles in place rather than defining its own.
+    subclass = Class.new(MultiRoleUser) do
+      def self.name; "ReconfiguredUser"; end
+      petergate(roles: [:auditor], multiple: true)
+    end
 
-  def test_a_subclass_with_its_own_roles_does_not_affect_its_parent
-    assert_equal [:root_admin, :company_admin, :user], MultiRoleUser::ROLES
+    assert_equal MultiRoleUser::ROLES, subclass::ROLES
+    refute_includes subclass::ROLES, :auditor
   end
 
   ##############################################################################
