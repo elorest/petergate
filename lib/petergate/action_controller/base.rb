@@ -136,17 +136,14 @@ module Petergate
           format.html do
             notice = msg || request.headers['msg'] || custom_message
 
-            # Send a signed-in user back where they came from. `redirect_back`
-            # reads the Referer itself and, with allow_other_host disabled, falls
-            # back instead of raising when it points off-site. Rails refuses
-            # off-host redirects, and the Referer is supplied by the caller.
-            if current_user.present?
-              redirect_back fallback_location: after_sign_in_path_for(current_user),
-                            allow_other_host: false,
-                            notice: notice
-            else
-              redirect_to root_path, notice: notice
-            end
+            # The Referer is deliberately not consulted. The original line read
+            # request.headers['Referrer'] -- a misspelling of the HTTP header --
+            # so it was always nil and this always resolved to the signed-in
+            # destination. Honouring the real header now would change where
+            # every existing app sends a refused user, and would hand the
+            # redirect target to the caller.
+            destination = current_user.present? ? after_sign_in_path_for(current_user) : root_path
+            redirect_to destination, notice: notice
           end
         end
       end
@@ -155,11 +152,13 @@ module Petergate
 end
 
 # Hook in lazily rather than reopening ActionController::Base at require time:
-# eager reopening forces ActionPack to boot early and skips API controllers.
-ActiveSupport.on_load(:action_controller_base) do
-  include Petergate::ActionController::Base
-end
-
-ActiveSupport.on_load(:action_controller_api) do
+# eager reopening forces ActionPack to load during boot, and it misses API
+# controllers entirely.
+#
+# :action_controller rather than the newer :action_controller_base and
+# :action_controller_api pair. Rails runs this one for both Base and API, and
+# it predates the other two (added in 5.2) -- so on an older Rails the pair
+# would simply never fire and petergate would silently stop working.
+ActiveSupport.on_load(:action_controller) do
   include Petergate::ActionController::Base
 end

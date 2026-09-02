@@ -10,16 +10,19 @@ class DenialTest < Petergate::RequestTest
   # forbidden!
   ##############################################################################
 
-  def test_forbidden_sends_a_signed_in_user_back_where_they_came_from
+  def test_forbidden_ignores_the_referer_for_a_signed_in_user
+    # petergate has never honoured the Referer: the original code read the
+    # header as "Referrer", which is always nil, so a refused user has always
+    # landed on the signed-in destination.
     as user do
       get "/forbid", headers: { "Referer" => "http://www.example.com/blogs" }
-      assert_redirected_to "http://www.example.com/blogs"
+      assert_redirected_to "/dashboard"
     end
   end
 
-  def test_forbidden_refuses_to_bounce_a_user_to_another_host
-    # The Referer is supplied by the caller, so an off-site value must not turn
-    # a denial into an open redirect -- nor into a 500 from Rails' protection.
+  def test_forbidden_cannot_be_pointed_at_another_host
+    # Nothing caller-supplied may choose the redirect target, so an off-site
+    # Referer cannot turn a denial into an open redirect.
     as user do
       get "/forbid", headers: { "Referer" => "https://attacker.example/landing" }
       assert_redirected_to "/dashboard"

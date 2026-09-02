@@ -12,7 +12,6 @@ Gem::Specification.new do |spec|
   spec.description   = %q{If you like the straight forward and effective nature of Strong Parameters and suspect that CanCan might be overkill for your project then you'll love Petergate's easy to use and read action and content based authorizations.}
   spec.homepage      = "https://github.com/elorest/petergate"
   spec.license       = "MIT"
-  spec.required_ruby_version = ">= 3.2"
   spec.metadata      = {
     "source_code_uri" => "https://github.com/elorest/petergate",
     "bug_tracker_uri" => "https://github.com/elorest/petergate/issues",
@@ -26,15 +25,18 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "bundler", "> 1.7"
   spec.add_development_dependency "rake", ">= 12.3"
 
-  # petergate reopens ActionController (actionpack) and calls String#pluralize
-  # (activesupport), so both are real runtime dependencies -- not just activerecord.
+  # petergate reopens ActionController (actionpack), calls String#pluralize
+  # (activesupport), and subclasses Rails::Railtie (railties), so all three are
+  # real runtime dependencies -- not just activerecord.
   #
-  # The floor is 7.1 because the roles column is declared with
-  # `serialize :roles, coder: YAML`, and the coder: keyword arrived in 7.1.
-  spec.add_dependency "activerecord",  ">= 7.1"
-  spec.add_dependency "actionpack",    ">= 7.1"
-  spec.add_dependency "activesupport", ">= 7.1"
-  # The railtie subclasses Rails::Railtie and the generators build on
-  # Rails::Generators, both of which live in railties.
-  spec.add_dependency "railties",      ">= 7.1"
+  # The floors deliberately match the original activerecord constraint. Raising
+  # them would refuse an upgrade to apps that work today: `serialize :roles,
+  # coder: YAML` reads like a 7.1-only API, but on 7.0 and earlier `attribute`
+  # swallows the unknown keyword and serialize falls through to
+  # YAMLColumn.new(:roles, Object) -- the same column behaviour. CI verifies
+  # Rails 7.1 through 8.1; older versions are permitted, not promised.
+  spec.add_dependency "activerecord",  "> 4.0.0"
+  spec.add_dependency "actionpack",    "> 4.0.0"
+  spec.add_dependency "activesupport", "> 4.0.0"
+  spec.add_dependency "railties",      "> 4.0.0"
 end
