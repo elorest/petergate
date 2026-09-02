@@ -75,7 +75,7 @@ class RolesTest < ActiveSupport::TestCase
 
   def test_multiple_stores_roles_as_a_yaml_array
     MultiRoleUser.create!(email: "a@example.com", roles: [:company_admin])
-    raw = MultiRoleUser.lease_connection.select_value("select roles from multi_role_users limit 1")
+    raw = connection_for(MultiRoleUser).select_value("select roles from multi_role_users limit 1")
     assert_equal "---\n- :company_admin\n- :user\n", raw
   end
 
@@ -107,7 +107,7 @@ class RolesTest < ActiveSupport::TestCase
 
   def test_single_stores_the_role_as_a_plain_string
     SingleRoleUser.create!(email: "a@example.com", roles: :company_admin)
-    raw = SingleRoleUser.lease_connection.select_value("select roles from single_role_users limit 1")
+    raw = connection_for(SingleRoleUser).select_value("select roles from single_role_users limit 1")
     assert_equal "company_admin", raw
   end
 
@@ -189,5 +189,40 @@ class RolesTest < ActiveSupport::TestCase
 
     assert_equal [admin.id], SingleRoleUser.role_root_admins.pluck(:id)
     assert_empty SingleRoleUser.role_company_admins
+  end
+  ##############################################################################
+  # Reconfiguring and subclassing
+  ##############################################################################
+
+  def test_configuring_a_model_twice_keeps_the_first_set_of_roles
+    assert_equal [:first_role, :user], TwiceConfigured::ROLES
+  end
+
+  def test_a_role_from_the_discarded_second_call_is_not_assignable
+    assert_equal [:user], TwiceConfigured.new(roles: :second_role).roles
+  end
+
+  def test_a_subclass_inherits_its_parents_roles
+    assert_equal MultiRoleUser::ROLES, InheritedRoles::ROLES
+    assert_equal MultiRoleUser::ROLES, InheritedRoles.new.available_roles
+  end
+
+  def test_a_subclass_may_declare_its_own_roles
+    assert_equal [:auditor, :user], OwnRoles::ROLES
+    refute_equal MultiRoleUser::ROLES, OwnRoles::ROLES
+  end
+
+  def test_a_subclass_with_its_own_roles_does_not_affect_its_parent
+    assert_equal [:root_admin, :company_admin, :user], MultiRoleUser::ROLES
+  end
+
+  ##############################################################################
+  # Unexpected stored values
+  ##############################################################################
+
+  def test_a_stored_value_of_an_unexpected_type_reads_as_user
+    user = MultiRoleUser.new
+    user[:roles] = 42
+    assert_equal [:user], user.roles
   end
 end

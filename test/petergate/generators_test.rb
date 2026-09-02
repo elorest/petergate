@@ -40,6 +40,14 @@ class InstallGeneratorTest < Rails::Generators::TestCase
     end
   end
 
+  def test_running_the_installer_twice_does_not_duplicate_the_roles_block
+    run_generator
+    run_generator
+    model = File.read(File.join(destination_root, "app/models/user.rb"))
+    assert_equal 1, model.scan(/petergate\(roles:/).size,
+                 "expected the petergate block to appear exactly once"
+  end
+
   def test_the_generated_migration_is_valid_ruby
     run_generator
     migration = Dir[File.join(destination_root, "db/migrate/*_add_roles_to_users.rb")].first
@@ -88,5 +96,24 @@ class ScaffoldTemplateTest < Rails::Generators::TestCase
     path = File.join(destination_root, "app/controllers/gadgets_controller.rb")
     assert system("ruby", "-c", path, out: File::NULL, err: File::NULL),
            "generated controller is not valid Ruby"
+  end
+  def test_it_generates_namespaced_controllers
+    run_generator %w[Admin::Gadget name:string]
+    assert_file "app/controllers/admin/gadgets_controller.rb" do |controller|
+      # Rails emits the compact form for a namespaced resource; the `module`
+      # wrapper only appears when the application itself is namespaced.
+      assert_match(/class Admin::GadgetsController < ApplicationController/, controller)
+      assert_match(/^  access /, controller)
+      assert_match(/def admin_gadget_params/, controller)
+      # require_dependency was a classic-autoloader crutch; Zeitwerk needs none.
+      refute_match(/require_dependency/, controller)
+    end
+  end
+
+  def test_namespaced_controllers_are_valid_ruby
+    run_generator %w[Admin::Gadget name:string]
+    path = File.join(destination_root, "app/controllers/admin/gadgets_controller.rb")
+    assert system("ruby", "-c", path, out: File::NULL, err: File::NULL),
+           "generated namespaced controller is not valid Ruby"
   end
 end

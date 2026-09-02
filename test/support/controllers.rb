@@ -92,3 +92,29 @@ class BadValueRuleController < ApplicationController
   access user: 42
   def index; head :ok; end
 end
+
+# A block whose return value is not a Hash must be ignored.
+class BlockReturningNilController < ApplicationController
+  access(all: [:index]) { nil }
+  def index;   render plain: "index";   end
+  def destroy; render plain: "destroy"; end
+end
+
+# No access rules at all. The README shows calling forbidden! from an app's own
+# before_action, which reaches the denial helpers with no declared message.
+class NoRulesController < ApplicationController
+  def forbid
+    forbidden!
+  end
+end
+
+# petergate treats @user as a stand-in for current_user when deciding between
+# "forbidden" and "needs to authenticate". prepend_before_action puts it in
+# place before petergate's own callback runs.
+class GhostUserController < ApplicationController
+  prepend_before_action { @user = MultiRoleUser.new }
+  access all: [:index]
+
+  def index;   render plain: "index";   end
+  def destroy; render plain: "destroy"; end
+end

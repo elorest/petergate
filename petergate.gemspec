@@ -18,7 +18,7 @@ Gem::Specification.new do |spec|
     "bug_tracker_uri" => "https://github.com/elorest/petergate/issues",
   }
 
-  spec.files         = `git ls-files -z`.split("\x0").reject { |p| p.start_with?("test/", ".github/") }
+  spec.files         = `git ls-files -z`.split("\x0").reject { |p| p.start_with?("test/", "gemfiles/", ".github/") }
   spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
   spec.post_install_message = "NOTICE: As of version 1.5.0, the :admin role has been changed to :root_admin."

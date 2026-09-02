@@ -85,6 +85,13 @@ require_relative "support/controllers"
 require_relative "support/routes"
 
 class ActiveSupport::TestCase
+  # Rails 7.2 renamed Model.connection to Model.lease_connection, and calling
+  # the old name on newer versions is deprecated -- which this suite treats as
+  # a failure. Pick whichever the running version offers.
+  def connection_for(model)
+    model.respond_to?(:lease_connection) ? model.lease_connection : model.connection
+  end
+
   def teardown
     Blog.delete_all
     MultiRoleUser.delete_all

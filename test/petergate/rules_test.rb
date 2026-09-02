@@ -118,4 +118,32 @@ class RulesTest < Petergate::RequestTest
     get "/helpers"
     assert_equal "admin= root=", response.body
   end
+  ##############################################################################
+  # Edge cases in rule declaration and denial
+  ##############################################################################
+
+  def test_a_block_returning_something_other_than_a_hash_is_ignored
+    get "/block_returning_nil"
+    assert_response :success
+
+    delete "/block_returning_nil/1"
+    assert_response :redirect
+  end
+
+  def test_forbidden_falls_back_to_the_default_message_with_no_declared_rules
+    # A controller can call forbidden! from its own before_action without ever
+    # declaring `access`, so there is no controller_message to read.
+    as plain_user do
+      get "/no_rules_forbid"
+      assert_equal "Permission Denied", flash[:notice]
+    end
+  end
+
+  def test_an_at_user_stands_in_for_current_user_when_choosing_the_denial
+    # With @user set but nobody signed in, a refusal is a forbidden rather than
+    # a request to authenticate -- so it redirects to root, not to sign in.
+    delete "/ghost_user/1"
+    assert_redirected_to "/"
+    refute_equal "/sign_in", response.headers["Location"]
+  end
 end
