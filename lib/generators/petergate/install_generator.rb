@@ -5,7 +5,7 @@ module Petergate
     class InstallGenerator < Rails::Generators::Base
       include Rails::Generators::Migration
       source_root File.expand_path("../templates", __FILE__)
-      class_option :orm
+      class_option :orm, type: :string
 
       desc "Sets up rails project for Petergate Authorizations"
       def self.next_migration_number(path)

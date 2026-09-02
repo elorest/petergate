@@ -19,7 +19,7 @@ module Petergate
           end
 
           instance_eval do
-            const_set('ROLES', (roles + [:user]).uniq.map(&:to_sym)) unless defined?(User::ROLES)
+            const_set('ROLES', (roles + [:user]).uniq.map(&:to_sym)) unless const_defined?(:ROLES, false)
 
             if multiple
               roles.each do |role|
@@ -82,6 +82,8 @@ module Petergate
   end
 end
 
-class ActiveRecord::Base
+# Hook in lazily so ActiveRecord::Base is not forced to load during boot,
+# before the app has finished applying its own `config.active_record` settings.
+ActiveSupport.on_load(:active_record) do
   include Petergate::ActiveRecord::Base
 end

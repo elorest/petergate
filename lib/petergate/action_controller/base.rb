@@ -63,7 +63,7 @@ module Petergate
 
       def self.included(base)
         base.extend(ClassMethods)
-        base.helper_method :logged_in?, :forbidden!, :unauthorized!
+        base.helper_method :logged_in?, :forbidden!, :unauthorized! if base.respond_to?(:helper_method)
       end
 
       def parse_permission_rules(rules)
@@ -106,7 +106,16 @@ module Petergate
         defined?(self.class.controller_message) ? self.class.controller_message : 'Permission Denied'
       end
 
+      # ActionController::API does not include ActionController::MimeResponds,
+      # so `respond_to` is unavailable there. API controllers get a bare status
+      # code instead of an HTML redirect, which is what an API caller expects.
+      def negotiates_formats?
+        respond_to?(:respond_to)
+      end
+
       def unauthorized!
+        return head(:unauthorized) unless negotiates_formats?
+
         respond_to do |format|
           format.any(:js, :json, :xml) do 
             head(:unauthorized)
@@ -118,12 +127,14 @@ module Petergate
       end
 
       def forbidden!(msg = nil)
+        return head(:forbidden) unless negotiates_formats?
+
         respond_to do |format|
           format.any(:js, :json, :xml) do 
             head(:forbidden)
           end
           format.html do
-            destination = current_user.present? ? request.headers['Referrer'] || after_sign_in_path_for(current_user) : root_path
+            destination = current_user.present? ? request.headers['Referer'] || after_sign_in_path_for(current_user) : root_path
             redirect_to destination, notice: (msg || request.headers['msg'] || custom_message)
           end
         end
@@ -132,6 +143,12 @@ module Petergate
   end
 end
 
-class ActionController::Base
+# Hook in lazily rather than reopening ActionController::Base at require time:
+# eager reopening forces ActionPack to boot early and skips API controllers.
+ActiveSupport.on_load(:action_controller_base) do
+  include Petergate::ActionController::Base
+end
+
+ActiveSupport.on_load(:action_controller_api) do
   include Petergate::ActionController::Base
 end

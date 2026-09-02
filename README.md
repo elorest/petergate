@@ -1,12 +1,12 @@
 [![Petergate](https://github.com/elorest/petergate/blob/master/dummy/public/petergate.png)](https://github.com/elorest/petergate)
 
 [![Build Status](https://travis-ci.org/elorest/petergate.svg)](https://travis-ci.org/dburnsii/petergate)
-[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/isaacsloan/petergate?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/elorest/petergate?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Gem Version](https://badge.fury.io/rb/petergate.svg)](http://badge.fury.io/rb/petergate)
 
 
 
-> If you like the straight forward and effective nature of [Strong Parameters](https://github.com/rails/strong_parameters) and suspect that [cancan](https://github.com/ryanb/cancan) might be overkill for your project then you'll love [Petergate's](https://github.com/isaacsloan/petergate) easy to use and read action and content based authorizations."
+> If you like the straight forward and effective nature of [Strong Parameters](https://github.com/rails/strong_parameters) and suspect that [cancan](https://github.com/ryanb/cancan) might be overkill for your project then you'll love [Petergate's](https://github.com/elorest/petergate) easy to use and read action and content based authorizations."
 >
 > -- <cite>1 Peter 3:41</cite>
 
@@ -179,7 +179,7 @@ PeterGate is written and maintaned by Isaac Sloan and friends.
 
 ## Contributing
 
-1. Fork it ( https://github.com/isaacsloan/petergate/fork )
+1. Fork it ( https://github.com/elorest/petergate/fork )
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
