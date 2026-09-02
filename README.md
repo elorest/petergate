@@ -1,7 +1,6 @@
-[![Petergate](https://github.com/elorest/petergate/blob/master/dummy/public/petergate.png)](https://github.com/elorest/petergate)
+[![Petergate](https://raw.githubusercontent.com/elorest/petergate/master/assets/petergate.png)](https://github.com/elorest/petergate)
 
-[![Build Status](https://travis-ci.org/elorest/petergate.svg)](https://travis-ci.org/dburnsii/petergate)
-[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/elorest/petergate?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![CI](https://github.com/elorest/petergate/actions/workflows/ci.yml/badge.svg)](https://github.com/elorest/petergate/actions/workflows/ci.yml)
 [![Gem Version](https://badge.fury.io/rb/petergate.svg)](http://badge.fury.io/rb/petergate)
 
 

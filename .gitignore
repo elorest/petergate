@@ -6,8 +6,6 @@ Gemfile.lock
 /doc/
 /pkg/
 /spec/reports/
-dummy/log/*
-dummy/tmp/*
 *.sqlite3
 *.bundle
 *.so
@@ -16,3 +14,4 @@ dummy/tmp/*
 mkmf.log
 *.gem
 .DS_Store
+/tmp/
