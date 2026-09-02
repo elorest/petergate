@@ -1,3 +1,6 @@
+<%# 422 is written numerically on purpose. Rack 2.2 knows only
+    :unprocessable_entity and Rack 3.2 only :unprocessable_content, and this
+    template has to serve apps on either. -%>
 <% module_namespacing do -%>
 class <%= controller_class_name %>Controller < ApplicationController
   before_action :set_<%= singular_table_name %>, only: %i[ show edit update destroy ]
@@ -28,7 +31,7 @@ class <%= controller_class_name %>Controller < ApplicationController
     if @<%= orm_instance.save %>
       redirect_to @<%= singular_table_name %>, notice: <%= "'#{human_name} was successfully created.'" %>
     else
-      render :new, status: :unprocessable_entity
+      render :new, status: 422
     end
   end
 
@@ -37,7 +40,7 @@ class <%= controller_class_name %>Controller < ApplicationController
     if @<%= orm_instance.update("#{singular_table_name}_params") %>
       redirect_to @<%= singular_table_name %>, notice: <%= "'#{human_name} was successfully updated.'" %>, status: :see_other
     else
-      render :edit, status: :unprocessable_entity
+      render :edit, status: 422
     end
   end
 

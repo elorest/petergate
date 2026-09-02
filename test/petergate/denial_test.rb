@@ -55,6 +55,10 @@ class DenialTest < Petergate::RequestTest
     end
   end
 
+  # Pre-existing behaviour, pinned so a change to it is deliberate: the caller
+  # can put text in the flash through an "msg" request header. Rails escapes
+  # flash content, so this is not injection, but it is caller-supplied text
+  # shown to the user and worth removing if nothing relies on it.
   def test_forbidden_uses_a_message_supplied_as_a_request_header
     as user do
       get "/forbid", headers: { "msg" => "header message" }

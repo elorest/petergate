@@ -29,14 +29,15 @@ Gem::Specification.new do |spec|
   # (activesupport), and subclasses Rails::Railtie (railties), so all three are
   # real runtime dependencies -- not just activerecord.
   #
-  # The floors deliberately match the original activerecord constraint. Raising
-  # them would refuse an upgrade to apps that work today: `serialize :roles,
-  # coder: YAML` reads like a 7.1-only API, but on 7.0 and earlier `attribute`
-  # swallows the unknown keyword and serialize falls through to
-  # YAMLColumn.new(:roles, Object) -- the same column behaviour. CI verifies
-  # Rails 7.1 through 8.1; older versions are permitted, not promised.
-  spec.add_dependency "activerecord",  "> 4.0.0"
-  spec.add_dependency "actionpack",    "> 4.0.0"
-  spec.add_dependency "activesupport", "> 4.0.0"
-  spec.add_dependency "railties",      "> 4.0.0"
+  # 6.1 is the real floor, not a conservative one. `serialize :roles, coder:
+  # YAML` needs a serialize that accepts keywords: 6.1 and 7.0 swallow the
+  # unknown one and fall through to YAMLColumn.new(:roles, Object), and 7.1
+  # added coder: for real. On 6.0 and earlier the signature is
+  # serialize(attr_name, class_name_or_coder = Object) with no **options, so
+  # Ruby binds the hash to the positional argument and the model raises
+  # NoMethodError on load. CI covers 7.1 through 8.1.
+  spec.add_dependency "activerecord",  ">= 6.1"
+  spec.add_dependency "actionpack",    ">= 6.1"
+  spec.add_dependency "activesupport", ">= 6.1"
+  spec.add_dependency "railties",      ">= 6.1"
 end

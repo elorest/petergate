@@ -85,9 +85,15 @@ class ScaffoldTemplateTest < Rails::Generators::TestCase
   def test_generated_controllers_use_the_status_codes_turbo_needs
     run_generator %w[Gadget name:string]
     assert_file "app/controllers/gadgets_controller.rb" do |controller|
-      assert_match(/render :new, status: :unprocessable_entity/, controller)
-      assert_match(/render :edit, status: :unprocessable_entity/, controller)
+      assert_match(/render :new, status: 422/, controller)
+      assert_match(/render :edit, status: 422/, controller)
       assert_match(/notice: .*, status: :see_other/, controller)
+
+      # Neither symbol spans the Rack versions this template has to serve:
+      # 2.2 knows only :unprocessable_entity, 3.2 only :unprocessable_content,
+      # and 3.2 warns on the former. The numeric literal avoids the question.
+      refute_match(/unprocessable_entity/, controller)
+      refute_match(/unprocessable_content/, controller)
     end
   end
 

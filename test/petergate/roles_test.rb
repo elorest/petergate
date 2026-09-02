@@ -218,6 +218,46 @@ class RolesTest < ActiveSupport::TestCase
 
     assert_equal MultiRoleUser::ROLES, subclass::ROLES
     refute_includes subclass::ROLES, :auditor
+
+    # And nothing else is half-applied either: no scope for a role the model
+    # can never hold, and no second after_initialize.
+    refute_respond_to subclass, :role_auditors
+  end
+
+  def test_configuration_is_detected_through_more_than_one_level_of_inheritance
+    # The walk has to climb past intermediate classes that were never
+    # configured themselves.
+    middle = Class.new(MultiRoleUser) do
+      def self.name; "MiddleUser"; end
+    end
+    bottom = Class.new(middle) do
+      def self.name; "BottomUser"; end
+      petergate(roles: [:auditor], multiple: true)
+    end
+
+    assert_equal MultiRoleUser::ROLES, bottom::ROLES
+    refute_respond_to bottom, :role_auditors
+  end
+
+  def test_a_role_constant_from_an_included_module_is_not_mistaken_for_configuration
+    # Only the superclass chain decides whether a model is already configured.
+    # A concern carrying its own ROLES belongs to somebody else, and must not
+    # stop this model from getting its own.
+    foreign = Module.new do
+      def self.name; "ForeignRoles"; end
+      const_set(:ROLES, [:not_ours])
+    end
+
+    model = Class.new(ActiveRecord::Base) do
+      def self.name; "ModelWithConcern"; end
+      self.table_name = "accounts"
+      include foreign
+      petergate(roles: [:supervisor], multiple: false)
+    end
+
+    assert_equal [:supervisor, :user], model::ROLES
+    assert_equal [:supervisor, :user], model.new.available_roles
+    assert_equal [:supervisor, :user], model.new(roles: :supervisor).roles
   end
 
   ##############################################################################
