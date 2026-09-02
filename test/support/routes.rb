@@ -1,4 +1,6 @@
 Rails.application.routes.draw do
+  devise_for :users if DEVISE_AVAILABLE
+
   root to: "blogs#index"
   resources :blogs
 
@@ -19,6 +21,9 @@ Rails.application.routes.draw do
   get "/bad_symbol", to: "bad_symbol_rule#index"
   get "/bad_except", to: "bad_except_rule#index"
   get "/bad_value",  to: "bad_value_rule#index"
+
+  get    "/devise_backed",   to: "devise_backed#index"
+  delete "/devise_backed/1", to: "devise_backed#destroy"
 
   get    "/widgets",   to: "widgets#index"
   delete "/widgets/1", to: "widgets#destroy"

@@ -4,6 +4,21 @@ ENV["DATABASE_URL"] ||= "sqlite3::memory:"
 require "rails"
 require "active_record/railtie"
 require "action_controller/railtie"
+require "action_view/railtie"
+require "action_mailer/railtie"
+
+# Devise is a development dependency, not a runtime one. When it is present a
+# single test proves a real Devise app satisfies the authentication contract
+# the README documents; when it is absent that test skips.
+DEVISE_AVAILABLE = begin
+  require "devise"
+  # A generated config/initializers/devise.rb does this; the suite has no
+  # initializers, so it wires the ORM up itself.
+  require "devise/orm/active_record"
+  true
+rescue LoadError
+  false
+end
 
 require "petergate"
 
@@ -72,6 +87,13 @@ ActiveRecord::Schema.define do
     t.string :roles
   end
 
+  # A Devise-backed model, for the one integration test.
+  create_table :users, force: true do |t|
+    t.string :email,              null: false, default: ""
+    t.string :encrypted_password, null: false, default: ""
+    t.string :roles
+  end
+
   create_table :blogs, force: true do |t|
     t.string :title
     t.text   :content
@@ -80,6 +102,7 @@ ActiveRecord::Schema.define do
 end
 
 require_relative "support/models"
+require_relative "support/devise" if DEVISE_AVAILABLE
 require_relative "support/authentication"
 require_relative "support/controllers"
 require_relative "support/routes"
@@ -95,6 +118,7 @@ class ActiveSupport::TestCase
   def teardown
     Blog.delete_all
     MultiRoleUser.delete_all
+    User.delete_all if defined?(User)
     SingleRoleUser.delete_all
     Account.delete_all
     super

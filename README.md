@@ -5,9 +5,14 @@
 
 
 
-> If you like the straight forward and effective nature of [Strong Parameters](https://github.com/rails/strong_parameters) and suspect that [cancan](https://github.com/ryanb/cancan) might be overkill for your project then you'll love [Petergate's](https://github.com/elorest/petergate) easy to use and read action and content based authorizations."
+> If you like the straight forward and effective nature of [Strong Parameters](https://github.com/rails/strong_parameters) and suspect that [cancan](https://github.com/ryanb/cancan) might be overkill for your project then you'll love [Petergate's](https://github.com/elorest/petergate) easy to use and read action and content based authorizations.
 >
 > -- <cite>1 Peter 3:41</cite>
+
+Requirements
+------
+Rails 7.1 through 8.1 on Ruby 3.2 through 3.4 are covered by CI. Older Rails
+versions are permitted by the gemspec but are not verified.
 
 Installation
 ------
@@ -26,15 +31,18 @@ Or install it yourself as:
 
 ##### Prerequisites: Setup Authentication (Devise)
 
-Make sure your user model is defined in
-    app/models/user.rb
-and called User.
+The generator writes into `app/models/user.rb`, so a model named `User` is the
+supported setup.
 
-If you're using [devise](https://github.com/plataformatec/devise) you're in luck, otherwise you'll have to add following methods to your project:
+If you're using [devise](https://github.com/heartcombo/devise) you're in luck,
+otherwise you'll have to add the following methods to your project:
 
     current_user
     after_sign_in_path_for(current_user)
     authenticate_user!
+
+You also need a `root` route: a refused visitor who isn't signed in is sent
+there.
 
 ##### Run the generators
 
@@ -59,18 +67,32 @@ petergate(roles: [:admin, :editor], multiple: false)                            
 ############################################################################################
 ```
 
+With `multiple: false` the role is stored in the column as a plain string. With
+`multiple: true` the roles are stored as a YAML array, so query them through the
+generated scopes below rather than by matching the column directly.
+
 ##### Instance Methods
 
 ```ruby
 user.role => :editor
 user.roles => [:editor, :user]
 user.roles=(v) #sets roles
-user.available_roles => [:admin, :editor]
-user.has_roles?(:admin, :editors) # returns true if user is any of roles passed in as params.
+user.available_roles => [:admin, :editor, :user]
+user.has_roles?(:admin, :editor) # true if the user has any of the roles passed in
+user.has_role?(:admin)           # alias of has_roles?
 ```
 ##### Class Methods
 
-`User.#{role}_editors => #list of editors. Method is created for all roles. Roles [admin, :teacher] will have corresponding methods role_admins, role_teachers, etc.`
+A scope is defined for each configured role, named `role_` plus the pluralized
+role name:
+
+```ruby
+User.role_admins   # => users holding :admin
+User.role_editors  # => users holding :editor
+```
+
+So `petergate(roles: [:admin, :teacher])` gives you `User.role_admins` and
+`User.role_teachers`.
 
 #### Controllers
 
@@ -83,6 +105,25 @@ access all: [:show, :index], user: {except: [:destroy]}, company_admin: :all
 access [:all, :user] => [:show, :index]
 ```
 
+The key is a role, or an array of roles. `all` covers everyone, including
+visitors who aren't signed in. The value is one of:
+
+| Value | Meaning |
+| --- | --- |
+| `[:show, :index]` | just those actions |
+| `:all` | every action on the controller |
+| `{except: [:destroy]}` | every action except those |
+
+`:root_admin` is not a rule you write -- a user holding it bypasses the rules
+entirely.
+
+Rules declared on a parent controller are inherited by its subclasses, so a
+single `access` line on `ApplicationController` can cover a whole app.
+
+`access` works the same way in an `ActionController::API` controller. There a
+refused request answers with a bare `403`, and an unauthenticated one with
+`401`, instead of redirecting.
+
 Inside your views you can use logged_in?(:admin, :customer, :etc) to show or hide content.
 
 ```erb
@@ -92,16 +133,13 @@ Inside your views you can use logged_in?(:admin, :customer, :etc) to show or hid
 If you need to access available roles within your project you can by calling:
 
 ```ruby
-User::ROLES
-# or from an instance
-User.first.available_roles
-# ROLES is a CONSTANT and will still work from within the User model instance methods
-# like in this default setter:
-
-def roles=(v)
-  self[:roles] = v.map(&:to_sym).to_a.select{|r| r.size > 0 && ROLES.include?(r)}
-end
+User::ROLES              # => [:admin, :editor, :user]
+User.first.available_roles # the same list, from an instance
 ```
+
+`ROLES` is a constant on the model, so it is also reachable from your own
+instance methods. A subclass shares its parent's roles.
+
 If you need to deny access you can use the forbidden! method:
 
 ```ruby
@@ -120,7 +158,7 @@ access user: [:show, :index], message: "You shall not pass"
 #### User Admin Example Form for Multiple Roles
 
 ```slim
-= form_for @user do |f| 
+= form_with model: @user do |f| 
   - if @user.errors.any? 
     #error_explanation 
       h2 = "#{pluralize(@user.errors.count, "error")} prohibited this user from being saved:" 
@@ -134,10 +172,10 @@ access user: [:show, :index], message: "You shall not pass"
   - if @user.new_record? || params[:passwd] 
     .field 
       = f.label :password 
-      = f.text_field :password 
+      = f.password_field :password 
     .field 
       = f.label :password_confirmation 
-      = f.text_field :password_confirmation 
+      = f.password_field :password_confirmation 
   .field 
     = f.label :roles 
     = f.select :roles, @user.available_roles, {}, {multiple: true} 
@@ -147,7 +185,7 @@ access user: [:show, :index], message: "You shall not pass"
 #### User Admin Example Form for Single Role Mode
 
 ```slim
-= form_for @user do |f| 
+= form_with model: @user do |f| 
   - if @user.errors.any? 
     #error_explanation 
       h2 = "#{pluralize(@user.errors.count, "error")} prohibited this user from being saved:" 
@@ -161,19 +199,30 @@ access user: [:show, :index], message: "You shall not pass"
   - if @user.new_record? || params[:passwd] 
     .field 
       = f.label :password 
-      = f.text_field :password 
+      = f.password_field :password 
     .field 
       = f.label :password_confirmation 
-      = f.text_field :password_confirmation 
+      = f.password_field :password_confirmation 
   .field 
     = f.label :role 
     = f.select :role, @user.available_roles
   .actions = f.submit 
 ```
+Development
+-------
+
+    bundle install
+    bundle exec rake test
+
+The suite boots a small Rails application in memory rather than carrying a
+dummy app. To run it against a specific Rails version:
+
+    BUNDLE_GEMFILE=gemfiles/rails_7_1.gemfile bundle exec rake test
+
 Credits
 -------
 
-PeterGate is written and maintaned by Isaac Sloan and friends.
+PeterGate is written and maintained by Isaac Sloan and friends.
 
 
 ## Contributing
