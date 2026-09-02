@@ -12,12 +12,13 @@ Gem::Specification.new do |spec|
   spec.description   = %q{If you like the straight forward and effective nature of Strong Parameters and suspect that CanCan might be overkill for your project then you'll love Petergate's easy to use and read action and content based authorizations.}
   spec.homepage      = "https://github.com/elorest/petergate"
   spec.license       = "MIT"
+  spec.required_ruby_version = ">= 3.2"
   spec.metadata      = {
     "source_code_uri" => "https://github.com/elorest/petergate",
     "bug_tracker_uri" => "https://github.com/elorest/petergate/issues",
   }
 
-  spec.files         = `git ls-files -z`.split("\x0").delete_if{|p| p.include?("dummy/")}
+  spec.files         = `git ls-files -z`.split("\x0").reject { |p| p.start_with?("test/", ".github/") }
   spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
   spec.post_install_message = "NOTICE: As of version 1.5.0, the :admin role has been changed to :root_admin."
@@ -27,7 +28,13 @@ Gem::Specification.new do |spec|
 
   # petergate reopens ActionController (actionpack) and calls String#pluralize
   # (activesupport), so both are real runtime dependencies -- not just activerecord.
-  spec.add_dependency "activerecord",  "> 4.0.0"
-  spec.add_dependency "actionpack",    "> 4.0.0"
-  spec.add_dependency "activesupport", "> 4.0.0"
+  #
+  # The floor is 7.1 because the roles column is declared with
+  # `serialize :roles, coder: YAML`, and the coder: keyword arrived in 7.1.
+  spec.add_dependency "activerecord",  ">= 7.1"
+  spec.add_dependency "actionpack",    ">= 7.1"
+  spec.add_dependency "activesupport", ">= 7.1"
+  # The railtie subclasses Rails::Railtie and the generators build on
+  # Rails::Generators, both of which live in railties.
+  spec.add_dependency "railties",      ">= 7.1"
 end

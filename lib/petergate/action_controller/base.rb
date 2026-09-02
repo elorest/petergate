@@ -134,8 +134,19 @@ module Petergate
             head(:forbidden)
           end
           format.html do
-            destination = current_user.present? ? request.headers['Referer'] || after_sign_in_path_for(current_user) : root_path
-            redirect_to destination, notice: (msg || request.headers['msg'] || custom_message)
+            notice = msg || request.headers['msg'] || custom_message
+
+            # Send a signed-in user back where they came from. `redirect_back`
+            # reads the Referer itself and, with allow_other_host disabled, falls
+            # back instead of raising when it points off-site. Rails refuses
+            # off-host redirects, and the Referer is supplied by the caller.
+            if current_user.present?
+              redirect_back fallback_location: after_sign_in_path_for(current_user),
+                            allow_other_host: false,
+                            notice: notice
+            else
+              redirect_to root_path, notice: notice
+            end
           end
         end
       end
