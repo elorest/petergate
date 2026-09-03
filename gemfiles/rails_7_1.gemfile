@@ -1,0 +1,12 @@
+source "https://rubygems.org"
+
+gemspec path: ".."
+
+gem "rails",   "~> 7.1.0"
+gem "sqlite3", "~> 1.4"
+gem "rake",    ">= 13.0"
+
+# Devise is not a dependency of the gem -- petergate only needs the three
+# authentication methods the README documents. It is here so one test can prove
+# a real Devise app satisfies that contract.
+gem "devise"
