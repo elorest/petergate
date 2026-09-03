@@ -146,4 +146,29 @@ class RulesTest < Petergate::RequestTest
     assert_redirected_to "/"
     refute_equal "/sign_in", response.headers["Location"]
   end
+  ##############################################################################
+  # Public surface
+  ##############################################################################
+
+  def test_only_the_intended_methods_are_public_on_controllers
+    # This module is included into ActionController::Base and
+    # ActionController::API, so anything public here is public on every
+    # controller in the host application. Adding to this list should be a
+    # decision, not an accident.
+    assert_equal %i[
+      custom_message forbidden! logged_in? parse_permission_rules
+      permissions unauthorized! user_logged_in?
+    ].sort, Petergate::ActionController::Base.public_instance_methods(false).sort
+  end
+
+  def test_the_format_negotiation_check_is_internal
+    refute_includes Petergate::ActionController::Base.public_instance_methods(false),
+                    :negotiates_formats?
+  end
+
+  def test_only_petergate_itself_is_public_on_models
+    # Likewise for models: this is extended onto every ActiveRecord model.
+    assert_equal %i[petergate],
+                 Petergate::ActiveRecord::Base::ClassMethods.public_instance_methods(false).sort
+  end
 end

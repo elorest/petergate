@@ -1,3 +1,5 @@
+# Included into ActiveRecord::Base, through the load hook at the bottom of
+# this file.
 module Petergate
   module ActiveRecord
     module Base
@@ -20,6 +22,10 @@ module Petergate
 
           false
         end
+
+        # Internal. Declared after the definition so `petergate` itself stays
+        # public.
+        private :petergate_configured_by_ancestor?
 
         def petergate(roles: [:admin], multiple: true)
           # A subclass shares everything its parent configured -- roles, scopes

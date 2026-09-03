@@ -1,3 +1,6 @@
+# Included into ActionController::Base *and* ActionController::API: Rails runs
+# the :action_controller load hook for both. See the hook at the bottom of this
+# file for why that hook rather than the Base/API-specific pair.
 module Petergate
   module ActionController
     module Base
@@ -147,6 +150,10 @@ module Petergate
           end
         end
       end
+
+      # Internal. Named explicitly rather than with a bare `private` so the
+      # documented methods above stay public.
+      private :negotiates_formats?
     end
   end
 end
