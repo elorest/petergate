@@ -23,10 +23,6 @@ module Petergate
           false
         end
 
-        # Internal. Declared after the definition so `petergate` itself stays
-        # public.
-        private :petergate_configured_by_ancestor?
-
         def petergate(roles: [:admin], multiple: true)
           # A subclass shares everything its parent configured -- roles, scopes
           # and callbacks. Running again would define scopes for roles the model

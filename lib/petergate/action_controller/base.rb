@@ -150,10 +150,6 @@ module Petergate
           end
         end
       end
-
-      # Internal. Named explicitly rather than with a bare `private` so the
-      # documented methods above stay public.
-      private :negotiates_formats?
     end
   end
 end
