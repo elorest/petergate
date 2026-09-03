@@ -63,7 +63,7 @@ module Petergate
 
       def self.included(base)
         base.extend(ClassMethods)
-        base.helper_method :logged_in?, :forbidden!, :unauthorized!
+        base.helper_method :logged_in?, :forbidden!, :unauthorized! if base.respond_to?(:helper_method)
       end
 
       def parse_permission_rules(rules)
@@ -106,7 +106,16 @@ module Petergate
         defined?(self.class.controller_message) ? self.class.controller_message : 'Permission Denied'
       end
 
+      # ActionController::API does not include ActionController::MimeResponds,
+      # so `respond_to` is unavailable there. API controllers get a bare status
+      # code instead of an HTML redirect, which is what an API caller expects.
+      def negotiates_formats?
+        respond_to?(:respond_to)
+      end
+
       def unauthorized!
+        return head(:unauthorized) unless negotiates_formats?
+
         respond_to do |format|
           format.any(:js, :json, :xml) do 
             head(:unauthorized)
@@ -118,13 +127,23 @@ module Petergate
       end
 
       def forbidden!(msg = nil)
+        return head(:forbidden) unless negotiates_formats?
+
         respond_to do |format|
           format.any(:js, :json, :xml) do 
             head(:forbidden)
           end
           format.html do
-            destination = current_user.present? ? request.headers['Referrer'] || after_sign_in_path_for(current_user) : root_path
-            redirect_to destination, notice: (msg || request.headers['msg'] || custom_message)
+            notice = msg || request.headers['msg'] || custom_message
+
+            # The Referer is deliberately not consulted. The original line read
+            # request.headers['Referrer'] -- a misspelling of the HTTP header --
+            # so it was always nil and this always resolved to the signed-in
+            # destination. Honouring the real header now would change where
+            # every existing app sends a refused user, and would hand the
+            # redirect target to the caller.
+            destination = current_user.present? ? after_sign_in_path_for(current_user) : root_path
+            redirect_to destination, notice: notice
           end
         end
       end
@@ -132,6 +151,14 @@ module Petergate
   end
 end
 
-class ActionController::Base
+# Hook in lazily rather than reopening ActionController::Base at require time:
+# eager reopening forces ActionPack to load during boot, and it misses API
+# controllers entirely.
+#
+# :action_controller rather than the newer :action_controller_base and
+# :action_controller_api pair. Rails runs this one for both Base and API, and
+# it predates the other two (added in 5.2) -- so on an older Rails the pair
+# would simply never fire and petergate would silently stop working.
+ActiveSupport.on_load(:action_controller) do
   include Petergate::ActionController::Base
 end

@@ -6,7 +6,27 @@ module Petergate
       end
 
       module ClassMethods
+        # True when a class this one inherits from has already been through
+        # petergate. Only the superclass chain is walked: an included module
+        # carrying its own ROLES is somebody else's constant, not a sign that
+        # this model is already configured.
+        def petergate_configured_by_ancestor?
+          klass = superclass
+
+          while klass && klass != ::ActiveRecord::Base && klass != ::Object
+            return true if klass.const_defined?(:ROLES, false)
+            klass = klass.superclass
+          end
+
+          false
+        end
+
         def petergate(roles: [:admin], multiple: true)
+          # A subclass shares everything its parent configured -- roles, scopes
+          # and callbacks. Running again would define scopes for roles the model
+          # can never hold and register a second after_initialize.
+          return if petergate_configured_by_ancestor?
+
           if multiple
             serialize :roles, coder: YAML
             after_initialize do
@@ -19,7 +39,8 @@ module Petergate
           end
 
           instance_eval do
-            const_set('ROLES', (roles + [:user]).uniq.map(&:to_sym)) unless defined?(User::ROLES)
+            # Configuring the same model twice keeps the first set of roles.
+            const_set('ROLES', (roles + [:user]).uniq.map(&:to_sym)) unless const_defined?(:ROLES, false)
 
             if multiple
               roles.each do |role|
@@ -39,7 +60,7 @@ module Petergate
 
             if multiple
               def roles=(v)
-                self[:roles] = (Array(v).map(&:to_sym).select{|r| r.size > 0 && available_roles.include?(r)} + [:user]).uniq
+                self[:roles] = (Array(v).compact.map(&:to_sym).select{|r| r.size > 0 && available_roles.include?(r)} + [:user]).uniq
               end
             else
               def roles=(v)
@@ -48,8 +69,8 @@ module Petergate
                       v
                     when "Array"
                       v.first
-                    end.to_sym
-                self[:roles] = available_roles.include?(r) ? r : :user 
+                    end&.to_sym
+                self[:roles] = available_roles.include?(r) ? r : :user
               end
             end
 
@@ -82,6 +103,8 @@ module Petergate
   end
 end
 
-class ActiveRecord::Base
+# Hook in lazily so ActiveRecord::Base is not forced to load during boot,
+# before the app has finished applying its own `config.active_record` settings.
+ActiveSupport.on_load(:active_record) do
   include Petergate::ActiveRecord::Base
 end
