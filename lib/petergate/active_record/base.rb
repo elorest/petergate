@@ -8,27 +8,7 @@ module Petergate
       end
 
       module ClassMethods
-        # True when a class this one inherits from has already been through
-        # petergate. Only the superclass chain is walked: an included module
-        # carrying its own ROLES is somebody else's constant, not a sign that
-        # this model is already configured.
-        def petergate_configured_by_ancestor?
-          klass = superclass
-
-          while klass && klass != ::ActiveRecord::Base && klass != ::Object
-            return true if klass.const_defined?(:ROLES, false)
-            klass = klass.superclass
-          end
-
-          false
-        end
-
         def petergate(roles: [:admin], multiple: true)
-          # A subclass shares everything its parent configured -- roles, scopes
-          # and callbacks. Running again would define scopes for roles the model
-          # can never hold and register a second after_initialize.
-          return if petergate_configured_by_ancestor?
-
           if multiple
             serialize :roles, coder: YAML
             after_initialize do
@@ -41,7 +21,9 @@ module Petergate
           end
 
           instance_eval do
-            # Configuring the same model twice keeps the first set of roles.
+            # Own constant only, so each model that calls petergate gets its own
+            # roles rather than deferring to whichever model loaded first.
+            # Configuring the same model twice keeps the first set.
             const_set('ROLES', (roles + [:user]).uniq.map(&:to_sym)) unless const_defined?(:ROLES, false)
 
             if multiple

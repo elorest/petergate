@@ -109,15 +109,16 @@ module Petergate
         defined?(self.class.controller_message) ? self.class.controller_message : 'Permission Denied'
       end
 
-      # ActionController::API does not include ActionController::MimeResponds,
-      # so `respond_to` is unavailable there. API controllers get a bare status
-      # code instead of an HTML redirect, which is what an API caller expects.
-      def negotiates_formats?
+      # ActionController::Base includes ActionController::MimeResponds, which is
+      # what supplies `respond_to`. ActionController::API does not, so the
+      # denial helpers below answer an API caller with a bare status code
+      # rather than trying to negotiate a format it has no view layer for.
+      def mime_responds_available?
         respond_to?(:respond_to)
       end
 
       def unauthorized!
-        return head(:unauthorized) unless negotiates_formats?
+        return head(:unauthorized) unless mime_responds_available?
 
         respond_to do |format|
           format.any(:js, :json, :xml) do 
@@ -130,7 +131,7 @@ module Petergate
       end
 
       def forbidden!(msg = nil)
-        return head(:forbidden) unless negotiates_formats?
+        return head(:forbidden) unless mime_responds_available?
 
         respond_to do |format|
           format.any(:js, :json, :xml) do 
