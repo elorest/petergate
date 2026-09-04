@@ -1,3 +1,6 @@
+# Included into ActionController::Base *and* ActionController::API: Rails runs
+# the :action_controller load hook for both. See the hook at the bottom of this
+# file for why that hook rather than the Base/API-specific pair.
 module Petergate
   module ActionController
     module Base
@@ -106,15 +109,10 @@ module Petergate
         defined?(self.class.controller_message) ? self.class.controller_message : 'Permission Denied'
       end
 
-      # ActionController::API does not include ActionController::MimeResponds,
-      # so `respond_to` is unavailable there. API controllers get a bare status
-      # code instead of an HTML redirect, which is what an API caller expects.
-      def negotiates_formats?
-        respond_to?(:respond_to)
-      end
-
       def unauthorized!
-        return head(:unauthorized) unless negotiates_formats?
+        # ActionController::API has no MimeResponds, so no respond_to; a bare
+        # status is the right answer for an API caller regardless.
+        return head(:unauthorized) if is_a?(::ActionController::API)
 
         respond_to do |format|
           format.any(:js, :json, :xml) do 
@@ -127,7 +125,8 @@ module Petergate
       end
 
       def forbidden!(msg = nil)
-        return head(:forbidden) unless negotiates_formats?
+        # See unauthorized! -- API controllers cannot respond_to.
+        return head(:forbidden) if is_a?(::ActionController::API)
 
         respond_to do |format|
           format.any(:js, :json, :xml) do 

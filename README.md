@@ -130,6 +130,9 @@ Inside your views you can use logged_in?(:admin, :customer, :etc) to show or hid
 <%= link_to "destroy", destroy_listing_path(listing) if logged_in?(:admin, :customer, :etc) %>
 ```
 
+`logged_in?` tests roles. To ask only whether anyone is signed in, without
+caring which role they hold, use `user_logged_in?`.
+
 If you need to access available roles within your project you can by calling:
 
 ```ruby
@@ -140,7 +143,16 @@ User.first.available_roles # the same list, from an instance
 `ROLES` is a constant on the model, so it is also reachable from your own
 instance methods. A subclass shares its parent's roles.
 
-If you need to deny access you can use the forbidden! method:
+#### Denying access yourself
+
+Two helpers are available in controllers and in views:
+
+```ruby
+forbidden!     # refuse someone who is signed in
+unauthorized!  # send a visitor to authentication, via authenticate_user!
+```
+
+`forbidden!` is the one you want in your own filters:
 
 ```ruby
 before_action :check_active_user
@@ -149,11 +161,34 @@ def check_active_user
   forbidden! unless current_user.active
 end
 ```
-If you want to change the `permission denied` message you can add to the access line:
+
+Both answer a `js`, `json` or `xml` request with a bare `403` or `401` rather
+than a redirect, and do the same in an `ActionController::API` controller,
+which has no format negotiation to offer.
+
+##### The denial message
+
+`forbidden!` takes one for a single call, and `access` sets a default for the
+whole controller:
 
 ```ruby
+forbidden! "Your account is suspended"
+
 access user: [:show, :index], message: "You shall not pass"
 ```
+
+The message is resolved in this order, first match winning:
+
+| | Source |
+| --- | --- |
+| 1 | the argument passed to `forbidden!` |
+| 2 | an `msg` request header |
+| 3 | the `message:` option on `access` |
+| 4 | `"Permission Denied"` |
+
+Note the second entry: the `msg` header is read off the request, so a caller
+can replace a message you set with `message:`. It is undocumented legacy
+behaviour rather than something to rely on.
 
 #### User Admin Example Form for Multiple Roles
 

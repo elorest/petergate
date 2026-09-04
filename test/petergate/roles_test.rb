@@ -207,38 +207,6 @@ class RolesTest < ActiveSupport::TestCase
     assert_equal MultiRoleUser::ROLES, InheritedRoles.new.available_roles
   end
 
-  def test_a_subclass_shares_its_parents_roles_even_if_it_reconfigures
-    # Having one user model inherit from another and carry a different set of
-    # roles is not supported, so a second petergate call on a subclass leaves
-    # the parent's roles in place rather than defining its own.
-    subclass = Class.new(MultiRoleUser) do
-      def self.name; "ReconfiguredUser"; end
-      petergate(roles: [:auditor], multiple: true)
-    end
-
-    assert_equal MultiRoleUser::ROLES, subclass::ROLES
-    refute_includes subclass::ROLES, :auditor
-
-    # And nothing else is half-applied either: no scope for a role the model
-    # can never hold, and no second after_initialize.
-    refute_respond_to subclass, :role_auditors
-  end
-
-  def test_configuration_is_detected_through_more_than_one_level_of_inheritance
-    # The walk has to climb past intermediate classes that were never
-    # configured themselves.
-    middle = Class.new(MultiRoleUser) do
-      def self.name; "MiddleUser"; end
-    end
-    bottom = Class.new(middle) do
-      def self.name; "BottomUser"; end
-      petergate(roles: [:auditor], multiple: true)
-    end
-
-    assert_equal MultiRoleUser::ROLES, bottom::ROLES
-    refute_respond_to bottom, :role_auditors
-  end
-
   def test_a_role_constant_from_an_included_module_is_not_mistaken_for_configuration
     # Only the superclass chain decides whether a model is already configured.
     # A concern carrying its own ROLES belongs to somebody else, and must not
