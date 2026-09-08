@@ -109,4 +109,34 @@ class DenialTest < Petergate::RequestTest
       assert_response :success
     end
   end
+
+  ##############################################################################
+  # The message as a positional string
+  ##############################################################################
+
+  def test_a_string_before_the_rules_is_the_denial_message
+    as user do
+      delete "/positional_message/1"
+      assert_equal "You shall not pass", flash[:notice]
+    end
+  end
+
+  def test_the_message_key_warns_that_it_is_deprecated
+    _out, err = capture_io do
+      Class.new(ActionController::Base) do
+        include TestAuthentication
+        access user: [:index], message: "old way"
+      end
+    end
+
+    assert_match(/deprecated/, err)
+    assert_match(/string before the rules/, err)
+  end
+
+  def test_the_message_key_still_works
+    as user do
+      delete "/custom_message/1"
+      assert_equal "You shall not pass", flash[:notice]
+    end
+  end
 end

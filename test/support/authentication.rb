@@ -18,3 +18,26 @@ module TestAuthentication
       "/dashboard"
     end
 end
+
+# Two further scopes: the STI hierarchy rooted at Staff, and the separately
+# authenticated Vendor. A real app gets these from `devise_for`; here they are
+# hand-rolled, which is the other half of the contract the README documents.
+# Private for the same reason as the rest.
+module ScopedAuthentication
+  private
+    def current_staff
+      Petergate::Session.resources[:staff]
+    end
+
+    def authenticate_staff!
+      redirect_to "/staff_sign_in"
+    end
+
+    def current_vendor
+      Petergate::Session.resources[:vendor]
+    end
+
+    def authenticate_vendor!
+      redirect_to "/vendor_sign_in"
+    end
+end

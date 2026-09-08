@@ -24,7 +24,12 @@ Gem::Specification.new do |spec|
   spec.files         = `git ls-files -z`.split("\x0").reject { |p| p.start_with?("test/", "gemfiles/", ".github/", "assets/") }
   spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
-  spec.post_install_message = "NOTICE: As of version 1.5.0, the :admin role has been changed to :root_admin."
+  spec.post_install_message = <<~NOTICE
+    NOTICE: 3.2.0 -- `roles` now returns only roles the record's own class defines.
+    A role left in the column by a `type` change, or by being dropped from a
+    petergate declaration, no longer grants access. Roles set through `roles=` are
+    unaffected. See CHANGELOG.md.
+  NOTICE
 
   spec.add_development_dependency "bundler", "> 1.7"
   spec.add_development_dependency "rake", ">= 12.3"

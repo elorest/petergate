@@ -40,4 +40,18 @@ class ApiTest < Petergate::RequestTest
     delete "/widgets/1"
     assert_response :unauthorized
   end
+
+  # An API controller never calls authenticate_<scope>!: it answers a visitor
+  # with a bare 401. Requiring the authenticator to exist anyway made every
+  # request to such a scope raise, granted ones included.
+  def test_a_scope_without_an_authenticator_still_serves_a_granted_action
+    get "/robot_api"
+    assert_response :success
+    assert_equal "index", response.parsed_body["action"]
+  end
+
+  def test_a_scope_without_an_authenticator_still_refuses_a_visitor
+    delete "/robot_api/1"
+    assert_response :unauthorized
+  end
 end

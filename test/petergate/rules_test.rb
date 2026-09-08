@@ -21,6 +21,77 @@ class RulesTest < Petergate::RequestTest
     refute_includes BlogsController.all_actions, :authenticate_user!
   end
 
+  def test_all_actions_excludes_public_helpers_inherited_from_a_concrete_superclass
+    # Rails' action_methods reports all of these, because internal_methods only
+    # subtracts up to the first abstract controller. petergate has to reject
+    # them itself or `:all` grants them as if they were actions.
+    actions = PublicHelperController.all_actions
+
+    refute_includes actions, :current_employee,       "a helper_method is not an action"
+    refute_includes actions, :authenticate_employee!, "a bang method is not an action"
+    refute_includes actions, :employee_signed_in?,    "a predicate is not an action"
+    refute_includes actions, :after_sign_in_path_for, "a method taking an argument is not an action"
+  end
+
+  def test_a_method_that_cannot_be_an_action_is_excluded_even_when_declared_here
+    # Declaring a method on the controller says it is an action, but that
+    # cannot override taking an argument -- Rails dispatches with none.
+    assert_equal [:index], OwnArgumentController.all_actions
+  end
+
+  def test_all_actions_keeps_an_action_the_controller_declares_itself
+    # user_session collides with a Devise helper name, but this controller
+    # defines it, so it is an action and filtering must not eat it.
+    assert_equal %i[index user_session].sort, PublicHelperController.all_actions.sort
+  end
+
+  def test_all_actions_picks_up_a_method_defined_after_it_was_first_read
+    # The result is memoized against the identity of Rails' action_methods Set,
+    # which Rails replaces whenever a method is added -- so a controller that
+    # gains an action later must not keep serving a stale list.
+    controller = Class.new(ActionController::Base) do
+      include TestAuthentication
+      def index; end
+    end
+
+    assert_equal [:index], controller.all_actions
+
+    controller.class_eval { def show; end }
+
+    assert_equal %i[index show].sort, controller.all_actions.sort
+  end
+
+  def test_all_actions_never_publishes_its_guard_before_its_value
+    # A thread arriving while another is still computing must not take the
+    # early return and get nil: that reaches parse_permission_rules, where
+    # `:all` expands to nothing and `except:` raises on nil.
+    controller = Class.new(ActionController::Base) do
+      include TestAuthentication
+      def index; end
+      def show;  end
+    end
+    controller.singleton_class.prepend(Module.new do
+      def petergate_action_names(methods)
+        sleep 0.15
+        super
+      end
+    end)
+
+    results = Queue.new
+    first   = Thread.new { results << controller.all_actions }
+    sleep 0.05
+    second  = Thread.new { results << controller.all_actions }
+    [first, second].each(&:join)
+
+    two = [results.pop, results.pop]
+    two.each { |actions| assert_equal %i[index show].sort, actions.to_a.sort }
+  end
+
+  def test_all_actions_is_memoized_between_reads
+    first = BlogsController.all_actions
+    assert_same first, BlogsController.all_actions
+  end
+
   def test_except_actions_removes_the_named_actions
     assert_equal %i[index show new edit create update].sort,
                  BlogsController.except_actions([:destroy]).sort

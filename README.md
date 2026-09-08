@@ -31,9 +31,6 @@ Or install it yourself as:
 
 ##### Prerequisites: Setup Authentication (Devise)
 
-The generator writes into `app/models/user.rb`, so a model named `User` is the
-supported setup.
-
 If you're using [devise](https://github.com/heartcombo/devise) you're in luck,
 otherwise you'll have to add the following methods to your project:
 
@@ -50,6 +47,12 @@ there.
     rake db:migrate
 
 This will add a migration and insert petergate into your User model.
+
+The model defaults to `User`; pass another to configure it instead. The model
+has to exist already.
+
+    rails g petergate:install Employee            # app/models/employee.rb
+    rails g petergate:install Employee --table-name=staff
 
 Usage
 ------
@@ -114,8 +117,38 @@ visitors who aren't signed in. The value is one of:
 | `:all` | every action on the controller |
 | `{except: [:destroy]}` | every action except those |
 
-`:root_admin` is not a rule you write -- a user holding it bypasses the rules
-entirely.
+##### The `:root_admin` role
+
+`:root_admin` is the one role name petergate treats specially. It is checked
+before any rule, so a user holding it reaches every action on every controller
+that uses `access`, and no rule ever names it:
+
+```ruby
+class ArticlesController < ApplicationController
+  access all: [:index, :show], editor: :all
+end
+```
+
+An `:editor` gets what the rule says. A `:root_admin` gets all of it too,
+without appearing in the rule at all.
+
+It is not automatic, though. Like any other role it has to be declared before
+anyone can hold it, because `roles=` drops anything the model does not define:
+
+```ruby
+petergate(roles: [:root_admin, :editor], multiple: true)
+```
+
+An application that never declares it has no such bypass, which is a reasonable
+choice -- it exists for the account that must never be locked out of its own
+admin area, not as a convenience for ordinary administrators. Prefer a normal
+role you grant explicitly; reach for `:root_admin` when you specifically want an
+account no `access` rule can shut out.
+
+Two limits. It only applies where `access` is used: a controller with no rules
+has nothing to bypass. And with several authentication scopes on one controller
+it counts only within the scopes that controller declares, so a `:root_admin` in
+one scope cannot walk into a controller whose rules are all about another.
 
 Rules declared on a parent controller are inherited by its subclasses, so a
 single `access` line on `ApplicationController` can cover a whole app.
@@ -123,6 +156,74 @@ single `access` line on `ApplicationController` can cover a whole app.
 `access` works the same way in an `ActionController::API` controller. There a
 refused request answers with a bare `403`, and an unauthenticated one with
 `401`, instead of redirecting.
+
+#### Multiple authentication models
+
+By default every rule is about `current_user`. An application with more than one
+kind of signed-in person can say which one a rule means: `petergate_scope` sets
+it for a whole controller tree, and `access` takes it as a first argument for a
+single rule set.
+
+```ruby
+class Staff::BaseController < ApplicationController
+  petergate_scope Employee     # every controller below this authorizes employees
+end
+
+class Staff::PayrollController < Staff::BaseController
+  access admin: :all, support: [:index, :show]
+end
+
+class InvoicesController < ApplicationController
+  access Vendor, supplier: :all
+  access Employee, admin: [:index]
+end
+```
+
+The same declaration covers both ways of having several kinds of user, because
+petergate reads which one you have off Devise's mappings:
+
+| Declared | Resolves to | Reads |
+| --- | --- | --- |
+| an STI subclass, e.g. `Employee < User` | the parent's scope | `current_user`, required to be exactly an `Employee` |
+| a separately mapped model, e.g. `Vendor` | its own scope | `current_vendor` |
+
+Matching is exact: `access Employee` does not admit a `Manager < Employee`, so
+each kind names itself. A Symbol scope -- `access :member, ...` -- names a Devise
+mapping directly and does no type check, which is what you want for
+`devise_for :users, singular: :member`, where no class carries the name.
+
+Several `access` calls in one class body are **OR**'d: whichever scope is
+satisfied grants the action. A subclass declaring `access` replaces everything it
+inherited, so narrowing a parent's rules in a subclass still narrows them rather
+than adding another way in.
+
+The denial message is positional too -- `access Employee, "Staff only",
+support: :all` -- so the rules hash holds nothing but roles, and no name is
+reserved.
+
+##### Which login a refused person sees
+
+petergate works this out rather than asking you to configure it:
+
+| | |
+| --- | --- |
+| the scope holds nobody | `unauthorized!` -- that scope's `authenticate_*!` |
+| the scope holds someone of the wrong kind | `forbidden!` |
+
+So a customer who reaches an employee-only page under STI is refused outright:
+there is one login and they are already through it. A customer who reaches a
+`Vendor` page is sent to the vendor login instead, because that scope really is
+empty -- and with Devise they can sign in there without losing the session they
+already have, since Warden keys sessions per scope.
+
+With several scopes declared and nobody signed in to any of them, the login
+comes from `petergate_scope`, or from the first scope declared if the controller
+has no `petergate_scope` of its own.
+
+If a scope has no `current_*` behind it at all, petergate raises
+`Petergate::MissingScopeError` rather than failing quietly. The message says
+whether the class needs a `devise_for` of its own, shares a login with a parent
+class, or is not an authenticatable model at all.
 
 Inside your views you can use logged_in?(:admin, :customer, :etc) to show or hide content.
 
@@ -133,6 +234,15 @@ Inside your views you can use logged_in?(:admin, :customer, :etc) to show or hid
 `logged_in?` tests roles. To ask only whether anyone is signed in, without
 caring which role they hold, use `user_logged_in?`.
 
+Both resolve against the controller's own scope, and both take a `scope:` to ask
+about another one. Both are type-exact, so under `petergate_scope Employee` a
+signed-in `Manager < Employee` answers `false` -- it asks "is an Employee signed
+in", not "is anybody":
+
+```erb
+<%= link_to "Payroll", payroll_path if logged_in?(:admin, scope: Employee) %>
+```
+
 If you need to access available roles within your project you can by calling:
 
 ```ruby
@@ -141,7 +251,27 @@ User.first.available_roles # the same list, from an instance
 ```
 
 `ROLES` is a constant on the model, so it is also reachable from your own
-instance methods. A subclass shares its parent's roles.
+instance methods. A subclass shares its parent's roles unless it calls
+`petergate` itself, which gives it a vocabulary of its own -- useful with single
+table inheritance, where each kind of user needs different roles:
+
+```ruby
+class User < ApplicationRecord
+  petergate(roles: [:customer], multiple: true)
+end
+
+class Employee < User
+  petergate(roles: [:admin, :support], multiple: true)
+end
+
+Employee::ROLES # => [:admin, :support, :user]
+```
+
+`roles` only ever returns roles the record's own class defines. A role in the
+column that the class does not define is ignored, and warned about once. This
+matters when a record's `type` changes, or when a role is dropped from a
+`petergate` declaration: the column outlives whatever wrote it, and a leftover
+role must not keep granting access.
 
 #### Denying access yourself
 
@@ -169,13 +299,20 @@ which has no format negotiation to offer.
 ##### The denial message
 
 `forbidden!` takes one for a single call, and `access` sets a default for the
-whole controller:
+whole controller -- as a string before the rules:
 
 ```ruby
 forbidden! "Your account is suspended"
 
-access user: [:show, :index], message: "You shall not pass"
+access "You shall not pass", user: [:show, :index]
+access Employee, "Staff only", support: :all
 ```
+
+Like the scope, it sits outside the rules hash so it cannot be confused with a
+role.
+
+The `message:` key is deprecated. It still works and a positional string wins if
+both are given, but it warns, naming the file and line to change.
 
 The message is resolved in this order, first match winning:
 
@@ -183,7 +320,7 @@ The message is resolved in this order, first match winning:
 | --- | --- |
 | 1 | the argument passed to `forbidden!` |
 | 2 | an `msg` request header |
-| 3 | the `message:` option on `access` |
+| 3 | the message given to `access` (or the deprecated `message:` key) |
 | 4 | `"Permission Denied"` |
 
 Note the second entry: the `msg` header is read off the request, so a caller

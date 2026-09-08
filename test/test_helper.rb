@@ -53,16 +53,32 @@ module Petergate
     config.active_support.disallowed_deprecation = :raise
   end
 
-  # Which user the next request should be made as. Stands in for a session.
+  # Who the next request should be made as. Stands in for a session.
+  #
+  # Keyed by Devise scope, because petergate can authorize against more than
+  # one. Nesting works, since each key is saved and restored independently:
+  #
+  #   as(customer) { as(vendor, scope: :vendor) { ... } }
   class Session
     class << self
-      attr_accessor :current_user
+      def resources
+        @resources ||= {}
+      end
 
-      def as(user)
-        previous, self.current_user = current_user, user
+      def current_user
+        resources[:user]
+      end
+
+      def reset!
+        @resources = {}
+      end
+
+      def as(resource, scope: :user)
+        previous = resources[scope]
+        resources[scope] = resource
         yield
       ensure
-        self.current_user = previous
+        resources[scope] = previous
       end
     end
   end
@@ -87,8 +103,30 @@ ActiveRecord::Schema.define do
     t.string :roles
   end
 
-  # A Devise-backed model, for the one integration test.
+  # An STI hierarchy: one table, one login, a role vocabulary per subclass.
+  create_table :staff, force: true do |t|
+    t.string :type
+    t.string :email
+    t.string :roles
+  end
+
+  # A separately authenticated model, for scopes that are not :user.
+  create_table :vendors, force: true do |t|
+    t.string :email
+    t.string :roles
+  end
+
+  # Devise-backed models, for the integration tests. `users` carries a type
+  # column so an STI subclass can share the one login, and `suppliers` is
+  # mapped separately so it has a scope of its own.
   create_table :users, force: true do |t|
+    t.string :type
+    t.string :email,              null: false, default: ""
+    t.string :encrypted_password, null: false, default: ""
+    t.string :roles
+  end
+
+  create_table :suppliers, force: true do |t|
     t.string :email,              null: false, default: ""
     t.string :encrypted_password, null: false, default: ""
     t.string :roles
@@ -119,8 +157,14 @@ class ActiveSupport::TestCase
     Blog.delete_all
     MultiRoleUser.delete_all
     User.delete_all if defined?(User)
+    Supplier.delete_all if defined?(Supplier)
     SingleRoleUser.delete_all
     Account.delete_all
+    Staff.delete_all
+    Vendor.delete_all
+    # An exception raised inside Session.as would otherwise leak the signed-in
+    # resource into the next test.
+    Petergate::Session.reset!
     super
   end
 end
@@ -130,9 +174,11 @@ end
 class Petergate::RequestTest < ActionDispatch::IntegrationTest
   self.app = Rails.application
 
-  # Issues the block's requests as `user`. A nil user is a signed-out visitor.
-  def as(user, &block)
-    Petergate::Session.as(user, &block)
+  # Issues the block's requests as `resource`. A nil resource is a signed-out
+  # visitor. Pass `scope:` to sign in to something other than :user; nest calls
+  # to be signed in to two scopes at once.
+  def as(resource, scope: :user, &block)
+    Petergate::Session.as(resource, scope: scope, &block)
   end
 
   # petergate answers js/json/xml requests with a bare status instead of a

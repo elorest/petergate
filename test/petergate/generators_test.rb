@@ -40,6 +40,121 @@ class InstallGeneratorTest < Rails::Generators::TestCase
     end
   end
 
+  def test_it_configures_a_named_model_instead_of_user
+    File.write File.join(destination_root, "app/models/worker.rb"), <<~RUBY
+      class Worker < ApplicationRecord
+      end
+    RUBY
+
+    run_generator %w[Worker]
+
+    assert_file "app/models/worker.rb" do |model|
+      assert_match(/petergate\(roles: \[:admin, :editor\], multiple: false\)/, model)
+    end
+    # The default model is left alone.
+    assert_file("app/models/user.rb") { |model| refute_match(/petergate/, model) }
+  end
+
+  def test_a_named_models_migration_carries_its_own_table_and_class
+    File.write File.join(destination_root, "app/models/worker.rb"), <<~RUBY
+      class Worker < ApplicationRecord
+      end
+    RUBY
+
+    run_generator %w[Worker]
+
+    assert_migration "db/migrate/add_roles_to_workers.rb" do |migration|
+      assert_match(/class AddRolesToWorkers < ActiveRecord::Migration/, migration)
+      assert_match(/add_column :workers, :roles, :string/, migration)
+    end
+  end
+
+  def test_the_table_name_can_be_overridden
+    File.write File.join(destination_root, "app/models/worker.rb"), <<~RUBY
+      class Worker < ApplicationRecord
+      end
+    RUBY
+
+    run_generator %w[Worker --table-name=staff]
+
+    assert_migration "db/migrate/add_roles_to_staff.rb" do |migration|
+      assert_match(/add_column :staff, :roles, :string/, migration)
+    end
+  end
+
+  def test_it_configures_a_namespaced_model_written_compactly
+    # Rails' own model generator emits `class Admin::User < ApplicationRecord`,
+    # which an anchor built from the demodulized name never matches.
+    mkdir_p File.join(destination_root, "app/models/admin")
+    File.write File.join(destination_root, "app/models/admin/user.rb"), <<~RUBY
+      class Admin::User < ApplicationRecord
+      end
+    RUBY
+
+    run_generator %w[Admin::User]
+
+    assert_file "app/models/admin/user.rb" do |model|
+      assert_match(/petergate\(roles: \[:admin, :editor\], multiple: false\)/, model)
+    end
+  end
+
+  def test_it_configures_a_namespaced_model_written_nested
+    mkdir_p File.join(destination_root, "app/models/admin")
+    File.write File.join(destination_root, "app/models/admin/user.rb"), <<~RUBY
+      module Admin
+        class User < ApplicationRecord
+        end
+      end
+    RUBY
+
+    run_generator %w[Admin::User]
+
+    assert_file "app/models/admin/user.rb" do |model|
+      assert_match(/petergate\(roles: \[:admin, :editor\], multiple: false\)/, model)
+    end
+  end
+
+  def test_a_namespaced_models_migration_targets_the_real_table
+    # Admin::User lives in `users` unless the namespace sets a table_name_prefix.
+    # `tableize` would guess `admin_users`, and the migration would fail.
+    mkdir_p File.join(destination_root, "app/models/admin")
+    File.write File.join(destination_root, "app/models/admin/user.rb"), <<~RUBY
+      class Admin::User < ApplicationRecord
+      end
+    RUBY
+
+    run_generator %w[Admin::User]
+
+    assert_migration "db/migrate/add_roles_to_users.rb" do |migration|
+      assert_match(/add_column :users, :roles, :string/, migration)
+    end
+  end
+
+  def test_two_runs_in_the_same_second_do_not_collide
+    File.write File.join(destination_root, "app/models/worker.rb"), <<~RUBY
+      class Worker < ApplicationRecord
+      end
+    RUBY
+
+    run_generator                 # User
+    run_generator %w[Worker]    # immediately after
+
+    versions = Dir[File.join(destination_root, "db/migrate/*.rb")]
+               .map { |path| File.basename(path)[/\A\d+/] }
+
+    assert_equal 2, versions.size
+    assert_equal versions.uniq.size, versions.size, "migration versions collided"
+  end
+
+  def test_it_refuses_a_model_that_does_not_exist
+    # Thor reports the error rather than letting it escape, so the observable
+    # result is the message plus nothing written.
+    output = capture(:stderr) { run_generator %w[Nonexistent] }
+
+    assert_match(%r{app/models/nonexistent\.rb}, output)
+    assert_no_migration "db/migrate/add_roles_to_nonexistents.rb"
+  end
+
   def test_running_the_installer_twice_does_not_duplicate_the_roles_block
     run_generator
     run_generator
