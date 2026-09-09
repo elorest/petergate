@@ -310,6 +310,31 @@ class ScopesTest < Petergate::RequestTest
     assert_match(/cannot be a petergate scope/, error.message)
   end
 
+  def test_petergate_scope_refuses_a_string
+    # To `access` a string is the denial message, so accepting one here would
+    # make the same literal mean two different things depending on which
+    # declaration it landed in.
+    error = assert_raises(ArgumentError) do
+      Class.new(ActionController::Base) do
+        include TestAuthentication
+        petergate_scope "staff"
+      end
+    end
+
+    assert_match(/not the string "staff"/, error.message)
+    assert_match(/petergate_scope :staff/, error.message)
+  end
+
+  def test_a_string_is_still_the_denial_message_to_access
+    # The other half of the pair: the same literal, still a message.
+    controller = Class.new(ActionController::Base) do
+      include TestAuthentication
+      access "Staff only", admin: :all
+    end
+
+    assert_equal "Staff only", controller.controller_message
+  end
+
   def test_each_login_is_looked_up_once_per_request
     # Several rules, and one of them grants early. Every declared scope still
     # has to be checked for existence, but no login should be read twice, and

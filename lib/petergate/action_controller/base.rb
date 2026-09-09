@@ -134,8 +134,10 @@ module Petergate
           # A rule that named no scope follows the reading controller's
           # petergate_scope, so it is filed under a sentinel and resolved when
           # read. Rewriting keys at declaration time cannot see subclasses yet.
+          #
+          # No normalization: the find above admits only a Class or a Symbol,
+          # and a String is refused outright, so there is nothing left to coerce.
           defaulted = scope.nil?
-          scope     = scope.to_sym if scope.is_a?(Symbol) || scope.is_a?(String)
           key       = defaulted ? Petergate::DEFAULT_SCOPE : scope
 
           # A subclass declaring `access` replaces everything it inherited, the
@@ -184,6 +186,16 @@ module Petergate
           # then refuses every role rule, and `all:` rules keep granting -- all
           # silently. Refuse it where it is declared instead.
           def petergate_validate_scope!(scope)
+            # To `access` a String is the denial message. Accepting one here as
+            # a scope name would make the same literal mean two different things
+            # depending on which declaration it landed in, so a typo would be
+            # silently absorbed by whichever it hit. Symbols name scopes.
+            if scope.is_a?(::String)
+              raise ArgumentError, "petergate_scope takes a model class or a symbol, not the " \
+                                   "string #{scope.inspect}. Write `petergate_scope " \
+                                   ":#{scope}` -- to `access`, a string is the denial message."
+            end
+
             return unless scope.is_a?(::Class)
             return if scope.respond_to?(:model_name)
 
