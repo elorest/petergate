@@ -25,12 +25,20 @@ module Petergate
     exact = mappings.each_value.find { |mapping| mapping.to == declared }
     return exact.name if exact
 
-    ::Devise::Mapping.find_scope!(declared)
-  rescue StandardError
-    # Devise has no mapping covering this class -- either it is not installed,
-    # or authentication is hand-rolled, which the README supports. Fall back to
-    # the class's own name.
-    derived_scope_for(declared)
+    # The ancestor walk find_scope! does internally, minus the raise -- so no
+    # rescue is needed to turn "no mapping" into the fallback.
+    #
+    # A method-level `rescue StandardError` here used to cover ::Devise.mappings
+    # above as well, and reading that loads routes on Rails 8. A NameError in
+    # routes.rb came back as a MissingScopeError naming the scope, which sends
+    # whoever reads it after the wrong bug. A routes error now surfaces as
+    # itself.
+    #
+    # Falling through means Devise is installed but covers nothing this class
+    # descends from, so authentication for it is hand-rolled -- which the README
+    # supports. Fall back to the class's own name.
+    mappings.each_value.find { |mapping| declared <= mapping.to }&.name ||
+      derived_scope_for(declared)
   end
 
   # Roles already warned about, and the lock guarding it. Created at load time:
