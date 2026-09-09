@@ -13,7 +13,13 @@ gem "rake",    ">= 13.0"
 # json 3.0 (released 2026-09-07) made JSON.parse's options keyword-only, while
 # ActiveSupport 8.1's ActiveSupport::JSON.decode still passes them positionally
 # -- which breaks encrypted cookies with metadata, and so any test that reads a
-# flash message. Only Rails 8.1 reaches that path. Remove once Rails ships a fix.
+# flash message. Only Rails 8.1 reaches that path.
+#
+# Remove once activesupport ships the fix. What to check is one line --
+# activesupport/lib/active_support/json/decoding.rb: 8.1.3.1 has
+# `::JSON.parse(json, options)`, and the fix reads `::JSON.parse(json, **options)`,
+# which is already what rails main carries:
+# https://github.com/rails/rails/blob/main/activesupport/lib/active_support/json/decoding.rb
 gem "json", "< 3"
 
 # Devise is not a dependency of the gem -- petergate only needs the three
