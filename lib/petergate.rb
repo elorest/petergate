@@ -56,6 +56,14 @@ module Petergate
     rejected.each do |role|
       key = [klass.name, role]
 
+      # Read before locking. #roles is read once per declared rule on every
+      # request, so for an application whose data has drifted -- exactly the
+      # audience this warning is for -- taking the mutex unconditionally would
+      # serialize every thread on it forever, long after the warning had been
+      # printed. The lock guards the write only, and losing the race costs one
+      # duplicate line.
+      next if @warned_roles.key?(key)
+
       # Reached from the authorization path of every request, so without this
       # concurrent threads could mutate the hash while another iterates it.
       first_time = @warned_roles_lock.synchronize do
