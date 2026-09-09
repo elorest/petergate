@@ -11,6 +11,21 @@ require "rails/generators/test_case"
 require "generators/petergate/install_generator"
 require "rails/generators/rails/scaffold_controller/scaffold_controller_generator"
 
+# A namespace whose models do not live where `tableize` would guess:
+# Warehouse::Item is `warehouse_items`, while the demodulized fallback answers
+# `items`. Defined as a real constant so `constantize` in the generator
+# resolves -- without one, every namespaced case falls through to the rescue
+# and the two branches cannot be told apart.
+module Warehouse
+  def self.table_name_prefix
+    "warehouse_"
+  end
+
+  # No table backing it, and none needed: table_name is derived, not queried.
+  class Item < ActiveRecord::Base
+  end
+end
+
 class InstallGeneratorTest < Rails::Generators::TestCase
   tests Petergate::Generators::InstallGenerator
   destination File.expand_path("../../tmp/install_generator", __dir__)
@@ -114,7 +129,11 @@ class InstallGeneratorTest < Rails::Generators::TestCase
     end
   end
 
-  def test_a_namespaced_models_migration_targets_the_real_table
+  # No Admin::User constant exists in this process, so `constantize` raises and
+  # this covers the rescue in roles_table_name. The branch above it -- asking
+  # the class -- is covered by Warehouse::Item below, where the two answers
+  # differ. Together they pin which branch runs.
+  def test_a_namespaced_models_migration_falls_back_to_the_demodulized_table
     # Admin::User lives in `users` unless the namespace sets a table_name_prefix.
     # `tableize` would guess `admin_users`, and the migration would fail.
     mkdir_p File.join(destination_root, "app/models/admin")
@@ -127,6 +146,23 @@ class InstallGeneratorTest < Rails::Generators::TestCase
 
     assert_migration "db/migrate/add_roles_to_users.rb" do |migration|
       assert_match(/add_column :users, :roles, :string/, migration)
+    end
+  end
+
+  def test_a_namespaced_model_is_asked_for_its_table_rather_than_guessed
+    mkdir_p File.join(destination_root, "app/models/warehouse")
+    File.write File.join(destination_root, "app/models/warehouse/item.rb"), <<~RUBY
+      class Warehouse::Item < ApplicationRecord
+      end
+    RUBY
+
+    run_generator %w[Warehouse::Item]
+
+    # Warehouse sets a table_name_prefix, so the class answers `warehouse_items`
+    # where the demodulized fallback would answer `items`. Asserting the prefix
+    # is what distinguishes the two.
+    assert_migration "db/migrate/add_roles_to_warehouse_items.rb" do |migration|
+      assert_match(/add_column :warehouse_items, :roles, :string/, migration)
     end
   end
 
