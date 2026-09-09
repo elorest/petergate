@@ -491,7 +491,7 @@ module Petergate
           resource = petergate_scope_resource(scope, strict: strict)
           return resource unless scope.is_a?(Class)
 
-          resource.instance_of?(scope) ? resource : nil if resource
+          resource if resource.instance_of?(scope)
         end
 
         # Checks that a scope resolves to a helper this controller actually has.
