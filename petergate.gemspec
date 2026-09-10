@@ -25,10 +25,18 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
   spec.post_install_message = <<~NOTICE
-    NOTICE: 3.2.0 -- `roles` now returns only roles the record's own class defines.
-    A role left in the column by a `type` change, or by being dropped from a
-    petergate declaration, no longer grants access. Roles set through `roles=` are
-    unaffected. See CHANGELOG.md.
+    NOTICE: 4.0.0 has three breaking changes. All of them can only take access
+    away, never grant it.
+
+      * `roles` returns only roles the record's own class defines. A role left in
+        the column by a `type` change, or by being dropped from a petergate
+        declaration, no longer grants. Roles set through `roles=` are unaffected.
+      * A subclass declaring `access` now runs the check at its own position in
+        the callback chain, so filters declared above it run before the denial.
+      * `:all` and `except:` cover fewer methods: `all_actions` no longer counts
+        methods that were never actions.
+
+    See CHANGELOG.md.
   NOTICE
 
   spec.add_development_dependency "bundler", "> 1.7"

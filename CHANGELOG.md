@@ -1,17 +1,18 @@
 # Changelog
 
-## 3.2.0 (unreleased)
+## 4.0.0
 
 ### Breaking
 
-Three things behave differently for code that already exists. All three can
-only take access away, never grant it, and each fails visibly when it bites --
-a denial, not a silently widened door.
+Three things behave differently for code that already exists, which is what
+makes this 4.0.0 rather than a point release.
 
-That is the reason this is 3.2.0 rather than 4.0.0. An upgrade cannot quietly
-let someone in who was previously refused; the worst case is a refusal that
-has to be put right, which is the direction an authorization library should
-fail in.
+All three can only take access away, never grant it, and each fails visibly
+when it bites -- a denial, not a silently widened door. An upgrade cannot
+quietly let someone in who was previously refused, which is the direction an
+authorization library should fail in. That is worth knowing before upgrading,
+but it describes the shape of the risk rather than making the release a
+smaller one than it is.
 
 - **An application whose stored roles have drifted from its declared ones will
   see those roles stop granting access.** That means a role left behind by an
