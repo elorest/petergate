@@ -24,6 +24,11 @@ Gem::Specification.new do |spec|
   spec.files         = `git ls-files -z`.split("\x0").reject { |p| p.start_with?("test/", "gemfiles/", ".github/", "assets/") }
   spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
+
+  # The floor Rails 8.0 and 8.1 already set, so this takes nothing away that
+  # the dependencies below did not. Ruby 4.0 is covered by CI as well; nothing
+  # here is pinned to a major.
+  spec.required_ruby_version = ">= 3.2.0"
   spec.post_install_message = <<~NOTICE
     NOTICE: 4.0.0 has three breaking changes. All of them can only take access
     away, never grant it.
