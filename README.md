@@ -11,8 +11,12 @@
 
 Requirements
 ------
-Rails 7.1 through 8.1 on Ruby 3.2 through 3.4 are covered by CI. Older Rails
+Rails 7.1 through 8.1 on Ruby 3.2 through 4.0 are covered by CI. Older Rails
 versions are permitted by the gemspec but are not verified.
+
+The gemspec requires Ruby 3.2, which is the floor Rails 8.0 sets. `.ruby-version`
+names the newest covered Ruby rather than the oldest, so development happens on
+the version most likely to surface a deprecation first.
 
 Installation
 ------
