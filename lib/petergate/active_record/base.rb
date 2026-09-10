@@ -58,15 +58,41 @@ module Petergate
               end
             end
 
+            # Only roles this record's own class defines.
+            #
+            # `roles=` filters against available_roles, but the column outlives
+            # the class that wrote it. An STI `type` change is the sharp case:
+            # the row keeps the roles of the kind it used to be, and those roles
+            # would otherwise still satisfy `access`, granting a Customer what
+            # was written for an Employee. Removing a role from a `petergate`
+            # declaration leaves the same residue behind.
+            #
+            # A subclass with its own petergate call is checked against its own
+            # ROLES; one without inherits its parent's, which is the constant
+            # lookup doing the right thing.
             def roles
-              case self[:roles].class.to_s
-              when "String", "Symbol"
-                [self[:roles].to_sym, :user].uniq
-              when "Array"
-                super
-              else
-                [:user]
-              end
+              # Deliberately no to_sym on the Array branch. `roles=` has always
+              # written symbols there, so an array of strings can only have come
+              # from a raw write -- update_column, an import, a fixture -- and
+              # normalizing it would start granting a role that previously
+              # matched nothing. Rejecting it keeps this release unable to widen
+              # access, and the warning says the data is wrong.
+              #
+              # The single-role branch does symbolize, because it always has:
+              # `role = "editor"` from a form is the documented way to set it.
+              stored = case self[:roles].class.to_s
+                       when "String", "Symbol"
+                         [self[:roles].to_sym]
+                       when "Array"
+                         Array(self[:roles]).compact
+                       else
+                         []
+                       end
+
+              permitted, rejected = stored.partition { |role| available_roles.include?(role) }
+              Petergate.warn_about_unavailable_roles(self.class, rejected) if rejected.any?
+
+              (permitted + [:user]).uniq
             end
 
             alias_method :role=, :roles=

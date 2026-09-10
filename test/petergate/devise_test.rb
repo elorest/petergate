@@ -72,6 +72,84 @@ class DeviseTest < Petergate::RequestTest
       assert_redirected_to new_user_session_path
     end
 
+    ############################################################################
+    # Scopes, resolved through Devise's real mappings
+    ############################################################################
+
+    def approver
+      @approver ||= Approver.create!(email: "approver@example.com",
+                                     password: "correct horse battery", roles: [:approver])
+    end
+
+    def supplier
+      @supplier ||= Supplier.create!(email: "supplier@example.com",
+                                     password: "correct horse battery", roles: [:shipping])
+    end
+
+    def test_devise_mappings_resolve_the_scopes_petergate_declares
+      # An STI subclass has no mapping of its own, so it shares the parent's
+      # login; a separately mapped model gets its own.
+      assert_equal :user,     Petergate.devise_scope_for(Approver)
+      assert_equal :supplier, Petergate.devise_scope_for(Supplier)
+      assert_includes Devise.mappings.keys, :supplier
+    end
+
+    def test_an_sti_subclass_is_authorized_through_the_shared_login
+      sign_in approver
+      delete "/devise_sti/1"
+      assert_response :success
+    end
+
+    def test_the_parent_class_does_not_satisfy_a_subclass_rule
+      # Same login, same session, wrong type -- and nothing else to
+      # authenticate as, so this is a refusal rather than a trip to sign-in.
+      sign_in company_admin
+      delete "/devise_sti/1"
+      assert_response :redirect
+      refute_equal new_user_session_path, response.headers["Location"]
+    end
+
+    def test_a_separately_mapped_model_is_authorized_through_its_own_login
+      sign_in supplier
+      delete "/devise_supplier/1"
+      assert_response :success
+    end
+
+    def test_a_user_reaching_a_supplier_page_is_sent_to_the_supplier_login
+      # The :supplier scope really is empty, so a login is the right answer
+      # even though this person is signed in as a User.
+      sign_in company_admin
+      delete "/devise_supplier/1"
+      assert_redirected_to new_supplier_session_path
+    end
+
+    # One request per test, deliberately. Warden's test mode puts the record
+    # itself in the session, and this app uses the `:json` cookie serializer
+    # (as a generated Rails app does), so a second request in the same session
+    # reads it back as a Hash of attributes rather than a record. That is an
+    # artifact of signing in through the test helper, not of petergate -- but it
+    # makes multi-request Devise tests here unreliable.
+    def test_both_scopes_can_hold_a_session_at_once_for_the_first_scope
+      sign_in approver
+      sign_in supplier
+
+      get "/devise_both_scopes"
+      assert_response :success
+    end
+
+    def test_both_scopes_can_hold_a_session_at_once_for_the_second_scope
+      sign_in approver
+      sign_in supplier
+
+      delete "/devise_both_scopes/1"
+      assert_response :success
+    end
+
+    def test_a_visitor_is_sent_to_the_first_declared_scopes_login
+      delete "/devise_both_scopes/1"
+      assert_redirected_to new_user_session_path
+    end
+
     def test_a_visitor_gets_401_for_a_webservice_request
       webservice_formats.each do |format|
         delete "/devise_backed/1", headers: headers_for(format), xhr: true

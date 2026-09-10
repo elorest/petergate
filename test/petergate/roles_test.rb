@@ -237,4 +237,83 @@ class RolesTest < ActiveSupport::TestCase
     user[:roles] = 42
     assert_equal [:user], user.roles
   end
+
+  ##############################################################################
+  # Roles the record's class does not define
+  ##############################################################################
+
+  def test_a_role_the_class_does_not_define_is_ignored
+    # An STI type change is how this happens in practice: the row keeps the
+    # roles of the kind it used to be. Written straight to the column, because
+    # roles= is exactly what normally prevents it.
+    #
+    # :root_admin is the case that matters -- it bypasses every rule.
+    employee = Employee.create!(email: "e@example.com", roles: [:root_admin])
+    assert_includes employee.roles, :root_admin
+
+    connection_for(Staff).update("update staff set type = 'Manager' where id = #{employee.id}")
+    manager = Manager.find(employee.id)
+
+    refute_includes Manager::ROLES, :root_admin
+    refute_includes manager.roles, :root_admin
+    refute manager.has_roles?(:root_admin), "a role the class does not define must not authorize"
+    assert_equal [:user], manager.roles
+  end
+
+  def test_roles_the_class_does_define_survive_the_filtering
+    employee = Employee.create!(email: "e2@example.com", roles: [:root_admin, :viewer])
+    connection_for(Staff).update("update staff set type = 'Manager' where id = #{employee.id}")
+
+    manager = Manager.find(employee.id)
+
+    # Manager defines :viewer but not :root_admin.
+    assert_includes manager.roles, :viewer
+    refute_includes manager.roles, :root_admin
+    assert manager.has_roles?(:viewer)
+  end
+
+  def test_a_subclass_without_its_own_petergate_call_uses_its_parents_roles
+    assert_equal MultiRoleUser::ROLES, InheritedRoles::ROLES
+
+    inherited = InheritedRoles.create!(email: "i@example.com", roles: [:company_admin])
+    assert_includes inherited.roles, :company_admin
+  end
+
+  def test_a_multi_role_column_holding_strings_is_rejected_not_normalized
+    # `roles=` has always written symbols here, so an array of strings can only
+    # have come from a raw write. It matched nothing before 3.2, and it must not
+    # start granting now -- this release can only take access away.
+    user = MultiRoleUser.create!(email: "str@example.com")
+    user[:roles] = ["company_admin"]
+    user.save!
+
+    reloaded = MultiRoleUser.find(user.id)
+    refute reloaded.has_roles?(:company_admin)
+    assert_equal [:user], reloaded.roles
+  end
+
+  def test_the_warning_explains_a_string_rather_than_contradicting_itself
+    # Saying the class "does not define" :company_admin while its ROLES clearly
+    # lists it sends the reader to look at their petergate call, where nothing
+    # is wrong. The format is the problem, and the warning has to say so.
+    # A role/class pair no other test touches: the warning fires once per pair
+    # for the life of the process, so sharing one makes the assertion depend on
+    # test order.
+    user = MultiRoleUser.create!(email: "warn@example.com")
+    user[:roles] = ["root_admin"]
+    user.save!
+
+    _out, err = capture_io { MultiRoleUser.find(user.id).roles }
+
+    assert_match(/holds it as a string/, err)
+    assert_match(/other than `roles=`/, err)
+    refute_match(/does not declare it/, err)
+  end
+
+  def test_a_single_role_column_holding_a_string_still_works
+    # The single-role setter has always accepted a string from a form, and the
+    # reader has always symbolized it.
+    user = SingleRoleUser.create!(email: "one@example.com", role: "company_admin")
+    assert_equal [:company_admin, :user], SingleRoleUser.find(user.id).roles
+  end
 end
